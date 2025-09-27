@@ -9,29 +9,30 @@ import h5py
 import numpy as np
 from PIL import Image
 
-
-
 def write_hdf5(arr,outfile):
   with h5py.File(outfile,"w") as f:
     f.create_dataset("image", data=arr, dtype=arr.dtype)
 
+#-------------Path of the images --------------------------------------------------------------
+# Ganti "retina-datasets" dengan nama dataset Anda di Kaggle
+base_input_path = "/kaggle/input/retina-datasets/DRIVE/"
 
-#------------Path of the images --------------------------------------------------------------
 #train
-original_imgs_train = "./DRIVE/training/images/"
-groundTruth_imgs_train = "./DRIVE/training/1st_manual/"
-borderMasks_imgs_train = "./DRIVE/training/mask/"
+original_imgs_train = base_input_path + "training/images/"
+groundTruth_imgs_train = base_input_path + "training/1st_manual/"
+border_masks_train = base_input_path + "training/mask/"
 #test
-original_imgs_test = "./DRIVE/test/images/"
-groundTruth_imgs_test = "./DRIVE/test/1st_manual/"
-borderMasks_imgs_test = "./DRIVE/test/mask/"
+original_imgs_test = base_input_path + "test/images/"
+groundTruth_imgs_test = base_input_path + "test/1st_manual/"
+border_masks_test = base_input_path + "test/mask/"
 #---------------------------------------------------------------------------------------------
 
 Nimgs = 20
 channels = 3
 height = 584
 width = 565
-dataset_path = "./DRIVE_datasets_training_testing/"
+# PERBAIKAN: Path output diubah ke direktori kerja Kaggle
+dataset_path = "/kaggle/working/DRIVE_datasets_training_testing/"
 
 def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
     imgs = np.empty((Nimgs,height,width,channels))
@@ -77,16 +78,19 @@ def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
 
 if not os.path.exists(dataset_path):
     os.makedirs(dataset_path)
+
 #getting the training datasets
-imgs_train, groundTruth_train, border_masks_train = get_datasets(original_imgs_train,groundTruth_imgs_train,borderMasks_imgs_train,"train")
+# PERBAIKAN: Nama variabel disesuaikan
+imgs_train, groundTruth_train, border_masks_train_data = get_datasets(original_imgs_train,groundTruth_imgs_train,border_masks_train,"train")
 print ("saving train datasets")
 write_hdf5(imgs_train, dataset_path + "DRIVE_dataset_imgs_train.hdf5")
 write_hdf5(groundTruth_train, dataset_path + "DRIVE_dataset_groundTruth_train.hdf5")
-write_hdf5(border_masks_train,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
+write_hdf5(border_masks_train_data,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
 
 #getting the testing datasets
-imgs_test, groundTruth_test, border_masks_test = get_datasets(original_imgs_test,groundTruth_imgs_test,borderMasks_imgs_test,"test")
+# PERBAIKAN: Nama variabel disesuaikan
+imgs_test, groundTruth_test, border_masks_test_data = get_datasets(original_imgs_test,groundTruth_imgs_test,border_masks_test,"test")
 print ("saving test datasets")
 write_hdf5(imgs_test,dataset_path + "DRIVE_dataset_imgs_test.hdf5")
 write_hdf5(groundTruth_test, dataset_path + "DRIVE_dataset_groundTruth_test.hdf5")
-write_hdf5(border_masks_test,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
+write_hdf5(border_masks_test_data,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
