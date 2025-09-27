@@ -1,5 +1,6 @@
 [data paths]
-path_local =  ./DRIVE_datasets_training_testing/
+# Ganti "drive-retina-dataset" dengan nama dataset yang Anda buat
+path_local = /kaggle/input/drive-retina-dataset/DRIVE_datasets_training_testing/
 train_imgs_original = DRIVE_dataset_imgs_train.hdf5
 train_groundTruth = DRIVE_dataset_groundTruth_train.hdf5
 train_border_masks = DRIVE_dataset_borderMasks_train.hdf5
@@ -10,7 +11,7 @@ test_border_masks = DRIVE_dataset_borderMasks_test.hdf5
 
 
 [experiment name]
-name = test80k
+name = test100k
 
 
 [data attributes]
@@ -21,12 +22,12 @@ patch_width = 48
 
 [training settings]
 #number of total patches:
-N_subimgs = 80000
+N_subimgs = 100000
 #if patches are extracted only inside the field of view:
 inside_FOV = False
 #Number of training epochs
 N_epochs = 150
-batch_size = 6
+batch_size = 8
 #if running with nohup
 nohup = False
 
