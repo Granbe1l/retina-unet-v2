@@ -20,18 +20,18 @@ base_input_path = "/kaggle/input/retina-datasets/DRIVE/"
 #train
 original_imgs_train = base_input_path + "training/images/"
 groundTruth_imgs_train = base_input_path + "training/1st_manual/"
-border_masks_train = base_input_path + "training/mask/"
+border_masks_train_path = base_input_path + "training/mask/" # Diganti nama agar lebih jelas
 #test
 original_imgs_test = base_input_path + "test/images/"
 groundTruth_imgs_test = base_input_path + "test/1st_manual/"
-border_masks_test = base_input_path + "test/mask/"
+border_masks_test_path = base_input_path + "test/mask/" # Diganti nama agar lebih jelas
 #---------------------------------------------------------------------------------------------
 
 Nimgs = 20
 channels = 3
 height = 584
 width = 565
-# PERBAIKAN: Path output diubah ke direktori kerja Kaggle
+# Path output diubah ke direktori kerja Kaggle
 dataset_path = "/kaggle/working/DRIVE_datasets_training_testing/"
 
 def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
@@ -41,12 +41,12 @@ def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
     for path, subdirs, files in os.walk(imgs_dir): #list all files, directories in the path
         for i in range(len(files)):
             #original
-            print ("original image: " +files[i])
+            print("original image: " +files[i])
             img = Image.open(imgs_dir+files[i])
             imgs[i] = np.asarray(img)
             #corresponding ground truth
             groundTruth_name = files[i][0:2] + "_manual1.gif"
-            print ("ground truth name: " + groundTruth_name)
+            print("ground truth name: " + groundTruth_name)
             g_truth = Image.open(groundTruth_dir + groundTruth_name)
             groundTruth[i] = np.asarray(g_truth)
             #corresponding border masks
@@ -56,17 +56,17 @@ def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
             elif train_test=="test":
                 border_masks_name = files[i][0:2] + "_test_mask.gif"
             else:
-                print ("specify if train or test!!")
+                print("specify if train or test!!")
                 exit()
-            print ("border masks name: " + border_masks_name)
+            print("border masks name: " + border_masks_name)
             b_mask = Image.open(borderMasks_dir + border_masks_name)
             border_masks[i] = np.asarray(b_mask)
 
-    print ("imgs max: " +str(np.max(imgs)))
-    print ("imgs min: " +str(np.min(imgs)))
+    print("imgs max: " +str(np.max(imgs)))
+    print("imgs min: " +str(np.min(imgs)))
     assert(np.max(groundTruth)==255 and np.max(border_masks)==255)
     assert(np.min(groundTruth)==0 and np.min(border_masks)==0)
-    print ("ground truth and border masks are correctly withih pixel value range 0-255 (black-white)")
+    print("ground truth and border masks are correctly withih pixel value range 0-255 (black-white)")
     #reshaping for my standard tensors
     imgs = np.transpose(imgs,(0,3,1,2))
     assert(imgs.shape == (Nimgs,channels,height,width))
@@ -80,17 +80,15 @@ if not os.path.exists(dataset_path):
     os.makedirs(dataset_path)
 
 #getting the training datasets
-# PERBAIKAN: Nama variabel disesuaikan
-imgs_train, groundTruth_train, border_masks_train_data = get_datasets(original_imgs_train,groundTruth_imgs_train,border_masks_train,"train")
-print ("saving train datasets")
+imgs_train, groundTruth_train, border_masks_train = get_datasets(original_imgs_train,groundTruth_imgs_train,border_masks_train_path,"train")
+print("saving train datasets")
 write_hdf5(imgs_train, dataset_path + "DRIVE_dataset_imgs_train.hdf5")
 write_hdf5(groundTruth_train, dataset_path + "DRIVE_dataset_groundTruth_train.hdf5")
-write_hdf5(border_masks_train_data,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
+write_hdf5(border_masks_train,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
 
 #getting the testing datasets
-# PERBAIKAN: Nama variabel disesuaikan
-imgs_test, groundTruth_test, border_masks_test_data = get_datasets(original_imgs_test,groundTruth_imgs_test,border_masks_test,"test")
-print ("saving test datasets")
+imgs_test, groundTruth_test, border_masks_test = get_datasets(original_imgs_test,groundTruth_imgs_test,border_masks_test_path,"test")
+print("saving test datasets")
 write_hdf5(imgs_test,dataset_path + "DRIVE_dataset_imgs_test.hdf5")
 write_hdf5(groundTruth_test, dataset_path + "DRIVE_dataset_groundTruth_test.hdf5")
-write_hdf5(border_masks_test_data,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
+write_hdf5(border_masks_test,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
