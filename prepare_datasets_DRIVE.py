@@ -15,16 +15,19 @@ def write_hdf5(arr,outfile):
 
 #-------------Path of the images --------------------------------------------------------------
 # Ganti "retina-datasets" dengan nama dataset Anda di Kaggle
-base_input_path = "/kaggle/input/retina-datasets/DRIVE/"
+#-------------Path of the images --------------------------------------------------------------
+# Path disesuaikan dengan nama dataset Anda di Kaggle
+base_input_path = "/kaggle/input/retina-dataset/DRIVE/"
 
 #train
 original_imgs_train = base_input_path + "training/images/"
 groundTruth_imgs_train = base_input_path + "training/1st_manual/"
-border_masks_train_path = base_input_path + "training/mask/" # Diganti nama agar lebih jelas
+border_masks_train = base_input_path + "training/mask/"
 #test
 original_imgs_test = base_input_path + "test/images/"
 groundTruth_imgs_test = base_input_path + "test/1st_manual/"
-border_masks_test_path = base_input_path + "test/mask/" # Diganti nama agar lebih jelas
+border_masks_test = base_input_path + "test/mask/"
+#---------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------
 
 Nimgs = 20
