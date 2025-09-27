@@ -1,0 +1,720 @@
+
+1. Create directory for the results (if not already existing)
+copy the configuration file in the results folder
+
+2. Run the training on GPU (no nohup)
+2025-09-22 05:18:56.316674: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1758518336.336807   29344 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1758518336.342865   29344 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1758518336.358567   29344 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1758518336.358592   29344 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1758518336.358596   29344 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1758518336.358602   29344 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2025-09-22 05:18:56.363244: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+train images/masks shape:
+(20, 1, 565, 565)
+train images range (min-max): 0.0 - 1.0
+train masks are within 0-1
+
+patches per full image: 1000
+
+train PATCHES images/masks shape:
+(20000, 1, 48, 48)
+train PATCHES images range (min-max): 0.00784313725490196 - 1.0
+2025-09-22 05:19:02.118978: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1758518342.119147   29344 gpu_device.cc:2019] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 13942 MB memory:  -> device: 0, name: Tesla T4, pci bus id: 0000:00:04.0, compute capability: 7.5
+Check: final output of the network:
+(None, 2304, 2)
+Epoch 1/150
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1758518371.736970   29386 service.cc:152] XLA service 0x7c97fc00c1c0 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+I0000 00:00:1758518371.737003   29386 service.cc:160]   StreamExecutor device (0): Tesla T4, Compute Capability 7.5
+2025-09-22 05:19:31.789172: I tensorflow/compiler/mlir/tensorflow/utils/dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+I0000 00:00:1758518372.026046   29386 cuda_dnn.cc:529] Loaded cuDNN version 91002
+2025-09-22 05:19:32.684185: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.34 = (f32[6,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,32,48,48]{3,2,1,0} %bitcast.15940, f32[32,32,3,3]{3,2,1,0} %bitcast.12639, f32[32]{0} %bitcast.15958), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_1_2/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:32.778929: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.35 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,32,24,24]{3,2,1,0} %bitcast.15983, f32[64,32,3,3]{3,2,1,0} %bitcast.14252, f32[64]{0} %bitcast.16001), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_2_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:32.825379: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.36 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,64,24,24]{3,2,1,0} %bitcast.16031, f32[64,64,3,3]{3,2,1,0} %bitcast.14278, f32[64]{0} %bitcast.16049), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_3_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:32.869948: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.37 = (f32[6,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,64,12,12]{3,2,1,0} %bitcast.16074, f32[128,64,3,3]{3,2,1,0} %bitcast.15104, f32[128]{0} %bitcast.16092), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_4_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:32.921447: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.38 = (f32[6,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,128,12,12]{3,2,1,0} %bitcast.16122, f32[128,128,3,3]{3,2,1,0} %bitcast.15130, f32[128]{0} %bitcast.16140), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_5_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:32.978645: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.39 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,192,24,24]{3,2,1,0} %bitcast.16165, f32[64,192,3,3]{3,2,1,0} %bitcast.15155, f32[64]{0} %bitcast.16183), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_6_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:33.030377: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.41 = (f32[6,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,96,48,48]{3,2,1,0} %bitcast.16255, f32[32,96,3,3]{3,2,1,0} %bitcast.15206, f32[32]{0} %bitcast.16273), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_8_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kNone","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+I0000 00:00:1758518377.913296   29386 device_compiler.h:188] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.7258 - loss: 0.56292025-09-22 05:19:53.313749: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.34 = (f32[6,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,32,48,48]{3,2,1,0} %bitcast.842, f32[32,32,3,3]{3,2,1,0} %bitcast.849, f32[32]{0} %bitcast.851), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_1_2/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.359803: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.35 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,32,24,24]{3,2,1,0} %bitcast.861, f32[64,32,3,3]{3,2,1,0} %bitcast.868, f32[64]{0} %bitcast.870), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_2_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.395743: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.36 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,64,24,24]{3,2,1,0} %bitcast.875, f32[64,64,3,3]{3,2,1,0} %bitcast.882, f32[64]{0} %bitcast.884), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_3_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.432251: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.37 = (f32[6,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,64,12,12]{3,2,1,0} %bitcast.894, f32[128,64,3,3]{3,2,1,0} %bitcast.901, f32[128]{0} %bitcast.903), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_4_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.472776: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.38 = (f32[6,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,128,12,12]{3,2,1,0} %bitcast.908, f32[128,128,3,3]{3,2,1,0} %bitcast.915, f32[128]{0} %bitcast.917), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_5_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.517162: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.39 = (f32[6,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,192,24,24]{3,2,1,0} %bitcast.929, f32[64,192,3,3]{3,2,1,0} %bitcast.936, f32[64]{0} %bitcast.938), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_6_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:53.561958: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.41 = (f32[6,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[6,96,48,48]{3,2,1,0} %bitcast.964, f32[32,96,3,3]{3,2,1,0} %bitcast.971, f32[32]{0} %bitcast.973), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_8_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.169312: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.34 = (f32[2,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,32,48,48]{3,2,1,0} %bitcast.841, f32[32,32,3,3]{3,2,1,0} %bitcast.848, f32[32]{0} %bitcast.850), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_1_2/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.200343: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.35 = (f32[2,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,32,24,24]{3,2,1,0} %bitcast.860, f32[64,32,3,3]{3,2,1,0} %bitcast.867, f32[64]{0} %bitcast.869), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_2_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.229913: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.36 = (f32[2,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,64,24,24]{3,2,1,0} %bitcast.874, f32[64,64,3,3]{3,2,1,0} %bitcast.881, f32[64]{0} %bitcast.883), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_3_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.263865: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.37 = (f32[2,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,64,12,12]{3,2,1,0} %bitcast.893, f32[128,64,3,3]{3,2,1,0} %bitcast.900, f32[128]{0} %bitcast.902), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_4_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.300010: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.38 = (f32[2,128,12,12]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,128,12,12]{3,2,1,0} %bitcast.907, f32[128,128,3,3]{3,2,1,0} %bitcast.914, f32[128]{0} %bitcast.916), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_5_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.340144: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.39 = (f32[2,64,24,24]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,192,24,24]{3,2,1,0} %bitcast.928, f32[64,192,3,3]{3,2,1,0} %bitcast.935, f32[64]{0} %bitcast.937), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_6_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+2025-09-22 05:19:55.383169: I external/local_xla/xla/service/gpu/autotuning/conv_algorithm_picker.cc:549] Omitted potentially buggy algorithm eng14{k25=2} for conv %cudnn-conv-bias-activation.41 = (f32[2,32,48,48]{3,2,1,0}, u8[0]{0}) custom-call(f32[2,96,48,48]{3,2,1,0} %bitcast.963, f32[32,96,3,3]{3,2,1,0} %bitcast.970, f32[32]{0} %bitcast.972), window={size=3x3 pad=1_1x1_1}, dim_labels=bf01_oi01->bf01, custom_call_target="__cudnn$convBiasActivationForward", metadata={op_type="Conv2D" op_name="functional_1/conv2d_8_1/convolution" source_file="/usr/local/lib/python3.12/dist-packages/tensorflow/python/framework/ops.py" source_line=1200}, backend_config={"operation_queue_id":"0","wait_on_operation_queues":[],"cudnn_conv_backend_config":{"conv_result_scale":1,"activation_mode":"kRelu","side_input_scale":0,"leakyrelu_alpha":0},"force_earliest_schedule":false}
+
+Epoch 1: val_loss improved from inf to 0.35268, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 25s 6ms/step - accuracy: 0.7261 - loss: 0.5626 - val_accuracy: 0.8830 - val_loss: 0.3527
+Epoch 2/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8967 - loss: 0.3286
+Epoch 2: val_loss improved from 0.35268 to 0.34594, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 33s 5ms/step - accuracy: 0.8967 - loss: 0.3286 - val_accuracy: 0.8831 - val_loss: 0.3459
+Epoch 3/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8958 - loss: 0.3249
+Epoch 3: val_loss improved from 0.34594 to 0.34220, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8958 - loss: 0.3249 - val_accuracy: 0.8831 - val_loss: 0.3422
+Epoch 4/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8956 - loss: 0.3224
+Epoch 4: val_loss improved from 0.34220 to 0.34178, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8956 - loss: 0.3224 - val_accuracy: 0.8831 - val_loss: 0.3418
+Epoch 5/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8967 - loss: 0.3183
+Epoch 5: val_loss improved from 0.34178 to 0.34175, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.8967 - loss: 0.3183 - val_accuracy: 0.8831 - val_loss: 0.3417
+Epoch 6/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8963 - loss: 0.3177
+Epoch 6: val_loss improved from 0.34175 to 0.34066, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.8963 - loss: 0.3177 - val_accuracy: 0.8831 - val_loss: 0.3407
+Epoch 7/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8961 - loss: 0.3168
+Epoch 7: val_loss improved from 0.34066 to 0.33499, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.8961 - loss: 0.3168 - val_accuracy: 0.8831 - val_loss: 0.3350
+Epoch 8/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8949 - loss: 0.3166
+Epoch 8: val_loss improved from 0.33499 to 0.33238, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8949 - loss: 0.3166 - val_accuracy: 0.8828 - val_loss: 0.3324
+Epoch 9/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8970 - loss: 0.3088
+Epoch 9: val_loss improved from 0.33238 to 0.32475, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8970 - loss: 0.3088 - val_accuracy: 0.8827 - val_loss: 0.3247
+Epoch 10/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8947 - loss: 0.3092
+Epoch 10: val_loss improved from 0.32475 to 0.32208, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.8947 - loss: 0.3092 - val_accuracy: 0.8832 - val_loss: 0.3221
+Epoch 11/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8959 - loss: 0.3010
+Epoch 11: val_loss improved from 0.32208 to 0.32099, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.8959 - loss: 0.3010 - val_accuracy: 0.8836 - val_loss: 0.3210
+Epoch 12/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8969 - loss: 0.2939
+Epoch 12: val_loss did not improve from 0.32099
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8969 - loss: 0.2939 - val_accuracy: 0.8841 - val_loss: 0.3234
+Epoch 13/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8958 - loss: 0.2928
+Epoch 13: val_loss improved from 0.32099 to 0.32039, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.8958 - loss: 0.2928 - val_accuracy: 0.8847 - val_loss: 0.3204
+Epoch 14/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8968 - loss: 0.2874
+Epoch 14: val_loss improved from 0.32039 to 0.31613, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8968 - loss: 0.2874 - val_accuracy: 0.8857 - val_loss: 0.3161
+Epoch 15/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8976 - loss: 0.2834
+Epoch 15: val_loss did not improve from 0.31613
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8976 - loss: 0.2834 - val_accuracy: 0.8865 - val_loss: 0.3165
+Epoch 16/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8974 - loss: 0.2808
+Epoch 16: val_loss improved from 0.31613 to 0.30159, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8974 - loss: 0.2808 - val_accuracy: 0.8881 - val_loss: 0.3016
+Epoch 17/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8975 - loss: 0.2787
+Epoch 17: val_loss improved from 0.30159 to 0.30006, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8975 - loss: 0.2787 - val_accuracy: 0.8896 - val_loss: 0.3001
+Epoch 18/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8995 - loss: 0.2722
+Epoch 18: val_loss improved from 0.30006 to 0.29506, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.8995 - loss: 0.2722 - val_accuracy: 0.8912 - val_loss: 0.2951
+Epoch 19/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8994 - loss: 0.2696
+Epoch 19: val_loss did not improve from 0.29506
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.8994 - loss: 0.2696 - val_accuracy: 0.8909 - val_loss: 0.3041
+Epoch 20/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.8995 - loss: 0.2681
+Epoch 20: val_loss improved from 0.29506 to 0.28936, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.8995 - loss: 0.2681 - val_accuracy: 0.8928 - val_loss: 0.2894
+Epoch 21/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9011 - loss: 0.2633
+Epoch 21: val_loss improved from 0.28936 to 0.28782, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9011 - loss: 0.2633 - val_accuracy: 0.8942 - val_loss: 0.2878
+Epoch 22/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9030 - loss: 0.2580
+Epoch 22: val_loss improved from 0.28782 to 0.27779, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9030 - loss: 0.2580 - val_accuracy: 0.8965 - val_loss: 0.2778
+Epoch 23/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9035 - loss: 0.2561
+Epoch 23: val_loss improved from 0.27779 to 0.27074, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9035 - loss: 0.2561 - val_accuracy: 0.8986 - val_loss: 0.2707
+Epoch 24/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9040 - loss: 0.2533
+Epoch 24: val_loss did not improve from 0.27074
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9040 - loss: 0.2533 - val_accuracy: 0.8974 - val_loss: 0.2795
+Epoch 25/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9050 - loss: 0.2514
+Epoch 25: val_loss improved from 0.27074 to 0.26794, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9050 - loss: 0.2514 - val_accuracy: 0.8997 - val_loss: 0.2679
+Epoch 26/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9062 - loss: 0.2471
+Epoch 26: val_loss improved from 0.26794 to 0.25488, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9062 - loss: 0.2471 - val_accuracy: 0.9032 - val_loss: 0.2549
+Epoch 27/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9063 - loss: 0.2462
+Epoch 27: val_loss did not improve from 0.25488
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9063 - loss: 0.2462 - val_accuracy: 0.9016 - val_loss: 0.2633
+Epoch 28/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9073 - loss: 0.2431
+Epoch 28: val_loss did not improve from 0.25488
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9073 - loss: 0.2431 - val_accuracy: 0.9041 - val_loss: 0.2559
+Epoch 29/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9069 - loss: 0.2422
+Epoch 29: val_loss improved from 0.25488 to 0.25179, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9069 - loss: 0.2422 - val_accuracy: 0.9055 - val_loss: 0.2518
+Epoch 30/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9093 - loss: 0.2374
+Epoch 30: val_loss improved from 0.25179 to 0.24998, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9093 - loss: 0.2374 - val_accuracy: 0.9063 - val_loss: 0.2500
+Epoch 31/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9096 - loss: 0.2366
+Epoch 31: val_loss improved from 0.24998 to 0.24486, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9096 - loss: 0.2366 - val_accuracy: 0.9080 - val_loss: 0.2449
+Epoch 32/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9097 - loss: 0.2353
+Epoch 32: val_loss improved from 0.24486 to 0.24480, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9097 - loss: 0.2353 - val_accuracy: 0.9082 - val_loss: 0.2448
+Epoch 33/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9107 - loss: 0.2326
+Epoch 33: val_loss did not improve from 0.24480
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9107 - loss: 0.2325 - val_accuracy: 0.9069 - val_loss: 0.2466
+Epoch 34/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9115 - loss: 0.2300
+Epoch 34: val_loss improved from 0.24480 to 0.23853, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.9115 - loss: 0.2300 - val_accuracy: 0.9098 - val_loss: 0.2385
+Epoch 35/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9122 - loss: 0.2279
+Epoch 35: val_loss improved from 0.23853 to 0.23337, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9122 - loss: 0.2279 - val_accuracy: 0.9117 - val_loss: 0.2334
+Epoch 36/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9127 - loss: 0.2262
+Epoch 36: val_loss did not improve from 0.23337
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 19s 5ms/step - accuracy: 0.9127 - loss: 0.2262 - val_accuracy: 0.9108 - val_loss: 0.2379
+Epoch 37/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9124 - loss: 0.2265
+Epoch 37: val_loss improved from 0.23337 to 0.22996, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.9124 - loss: 0.2265 - val_accuracy: 0.9137 - val_loss: 0.2300
+Epoch 38/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9137 - loss: 0.2234
+Epoch 38: val_loss improved from 0.22996 to 0.22841, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9137 - loss: 0.2234 - val_accuracy: 0.9132 - val_loss: 0.2284
+Epoch 39/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9142 - loss: 0.2221
+Epoch 39: val_loss improved from 0.22841 to 0.22513, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9142 - loss: 0.2221 - val_accuracy: 0.9146 - val_loss: 0.2251
+Epoch 40/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9145 - loss: 0.2206
+Epoch 40: val_loss did not improve from 0.22513
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9145 - loss: 0.2206 - val_accuracy: 0.9147 - val_loss: 0.2263
+Epoch 41/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9161 - loss: 0.2172
+Epoch 41: val_loss improved from 0.22513 to 0.21890, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9161 - loss: 0.2172 - val_accuracy: 0.9171 - val_loss: 0.2189
+Epoch 42/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9162 - loss: 0.2168
+Epoch 42: val_loss did not improve from 0.21890
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9162 - loss: 0.2168 - val_accuracy: 0.9170 - val_loss: 0.2224
+Epoch 43/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9165 - loss: 0.2153
+Epoch 43: val_loss improved from 0.21890 to 0.21848, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9165 - loss: 0.2153 - val_accuracy: 0.9175 - val_loss: 0.2185
+Epoch 44/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9169 - loss: 0.2137
+Epoch 44: val_loss improved from 0.21848 to 0.21820, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9169 - loss: 0.2137 - val_accuracy: 0.9180 - val_loss: 0.2182
+Epoch 45/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9174 - loss: 0.2127
+Epoch 45: val_loss improved from 0.21820 to 0.20888, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9174 - loss: 0.2127 - val_accuracy: 0.9202 - val_loss: 0.2089
+Epoch 46/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9175 - loss: 0.2120
+Epoch 46: val_loss did not improve from 0.20888
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9175 - loss: 0.2120 - val_accuracy: 0.9194 - val_loss: 0.2136
+Epoch 47/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9179 - loss: 0.2114
+Epoch 47: val_loss did not improve from 0.20888
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9179 - loss: 0.2114 - val_accuracy: 0.9189 - val_loss: 0.2161
+Epoch 48/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9183 - loss: 0.2098
+Epoch 48: val_loss did not improve from 0.20888
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9183 - loss: 0.2098 - val_accuracy: 0.9208 - val_loss: 0.2090
+Epoch 49/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9197 - loss: 0.2067
+Epoch 49: val_loss did not improve from 0.20888
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9197 - loss: 0.2067 - val_accuracy: 0.9202 - val_loss: 0.2135
+Epoch 50/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9196 - loss: 0.2071
+Epoch 50: val_loss did not improve from 0.20888
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 15s 5ms/step - accuracy: 0.9196 - loss: 0.2071 - val_accuracy: 0.9215 - val_loss: 0.2090
+Epoch 51/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9206 - loss: 0.2042
+Epoch 51: val_loss improved from 0.20888 to 0.20576, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9206 - loss: 0.2042 - val_accuracy: 0.9224 - val_loss: 0.2058
+Epoch 52/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9205 - loss: 0.2041
+Epoch 52: val_loss improved from 0.20576 to 0.20322, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9205 - loss: 0.2041 - val_accuracy: 0.9231 - val_loss: 0.2032
+Epoch 53/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9202 - loss: 0.2044
+Epoch 53: val_loss did not improve from 0.20322
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9202 - loss: 0.2044 - val_accuracy: 0.9223 - val_loss: 0.2050
+Epoch 54/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9212 - loss: 0.2025
+Epoch 54: val_loss improved from 0.20322 to 0.20263, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9212 - loss: 0.2025 - val_accuracy: 0.9233 - val_loss: 0.2026
+Epoch 55/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9221 - loss: 0.2005
+Epoch 55: val_loss improved from 0.20263 to 0.20255, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9221 - loss: 0.2005 - val_accuracy: 0.9237 - val_loss: 0.2025
+Epoch 56/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9217 - loss: 0.2005
+Epoch 56: val_loss did not improve from 0.20255
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9217 - loss: 0.2005 - val_accuracy: 0.9230 - val_loss: 0.2048
+Epoch 57/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9224 - loss: 0.1989
+Epoch 57: val_loss improved from 0.20255 to 0.19801, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9224 - loss: 0.1989 - val_accuracy: 0.9250 - val_loss: 0.1980
+Epoch 58/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9218 - loss: 0.1998
+Epoch 58: val_loss did not improve from 0.19801
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9218 - loss: 0.1998 - val_accuracy: 0.9247 - val_loss: 0.2012
+Epoch 59/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9219 - loss: 0.2002
+Epoch 59: val_loss improved from 0.19801 to 0.19735, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9219 - loss: 0.2002 - val_accuracy: 0.9261 - val_loss: 0.1973
+Epoch 60/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9223 - loss: 0.1985
+Epoch 60: val_loss did not improve from 0.19735
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9223 - loss: 0.1985 - val_accuracy: 0.9260 - val_loss: 0.1974
+Epoch 61/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9238 - loss: 0.1954
+Epoch 61: val_loss did not improve from 0.19735
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9238 - loss: 0.1954 - val_accuracy: 0.9244 - val_loss: 0.2004
+Epoch 62/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9236 - loss: 0.1963
+Epoch 62: val_loss improved from 0.19735 to 0.19456, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9236 - loss: 0.1963 - val_accuracy: 0.9266 - val_loss: 0.1946
+Epoch 63/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9235 - loss: 0.1961
+Epoch 63: val_loss improved from 0.19456 to 0.19293, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 6ms/step - accuracy: 0.9235 - loss: 0.1961 - val_accuracy: 0.9277 - val_loss: 0.1929
+Epoch 64/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9242 - loss: 0.1941
+Epoch 64: val_loss did not improve from 0.19293
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 19s 5ms/step - accuracy: 0.9242 - loss: 0.1941 - val_accuracy: 0.9272 - val_loss: 0.1951
+Epoch 65/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9246 - loss: 0.1933
+Epoch 65: val_loss did not improve from 0.19293
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9246 - loss: 0.1933 - val_accuracy: 0.9245 - val_loss: 0.2016
+Epoch 66/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9245 - loss: 0.1930
+Epoch 66: val_loss did not improve from 0.19293
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9245 - loss: 0.1930 - val_accuracy: 0.9268 - val_loss: 0.1951
+Epoch 67/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9250 - loss: 0.1918
+Epoch 67: val_loss improved from 0.19293 to 0.18957, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9250 - loss: 0.1918 - val_accuracy: 0.9286 - val_loss: 0.1896
+Epoch 68/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9256 - loss: 0.1905
+Epoch 68: val_loss did not improve from 0.18957
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9256 - loss: 0.1905 - val_accuracy: 0.9286 - val_loss: 0.1900
+Epoch 69/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9256 - loss: 0.1908
+Epoch 69: val_loss did not improve from 0.18957
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9256 - loss: 0.1908 - val_accuracy: 0.9256 - val_loss: 0.1986
+Epoch 70/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9261 - loss: 0.1892
+Epoch 70: val_loss did not improve from 0.18957
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9261 - loss: 0.1892 - val_accuracy: 0.9285 - val_loss: 0.1923
+Epoch 71/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9264 - loss: 0.1886
+Epoch 71: val_loss did not improve from 0.18957
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9264 - loss: 0.1886 - val_accuracy: 0.9291 - val_loss: 0.1913
+Epoch 72/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9263 - loss: 0.1885
+Epoch 72: val_loss did not improve from 0.18957
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9263 - loss: 0.1885 - val_accuracy: 0.9280 - val_loss: 0.1926
+Epoch 73/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9270 - loss: 0.1878
+Epoch 73: val_loss improved from 0.18957 to 0.18876, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9270 - loss: 0.1878 - val_accuracy: 0.9293 - val_loss: 0.1888
+Epoch 74/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9274 - loss: 0.1861
+Epoch 74: val_loss improved from 0.18876 to 0.18708, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.9274 - loss: 0.1861 - val_accuracy: 0.9300 - val_loss: 0.1871
+Epoch 75/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9266 - loss: 0.1876
+Epoch 75: val_loss did not improve from 0.18708
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9266 - loss: 0.1876 - val_accuracy: 0.9273 - val_loss: 0.1969
+Epoch 76/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9277 - loss: 0.1848
+Epoch 76: val_loss improved from 0.18708 to 0.18452, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9277 - loss: 0.1849 - val_accuracy: 0.9305 - val_loss: 0.1845
+Epoch 77/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9265 - loss: 0.1876
+Epoch 77: val_loss did not improve from 0.18452
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9265 - loss: 0.1876 - val_accuracy: 0.9306 - val_loss: 0.1861
+Epoch 78/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9266 - loss: 0.1870
+Epoch 78: val_loss did not improve from 0.18452
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9266 - loss: 0.1870 - val_accuracy: 0.9263 - val_loss: 0.1973
+Epoch 79/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9280 - loss: 0.1846
+Epoch 79: val_loss did not improve from 0.18452
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9280 - loss: 0.1846 - val_accuracy: 0.9309 - val_loss: 0.1848
+Epoch 80/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9276 - loss: 0.1849
+Epoch 80: val_loss improved from 0.18452 to 0.18401, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9276 - loss: 0.1849 - val_accuracy: 0.9310 - val_loss: 0.1840
+Epoch 81/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9284 - loss: 0.1833
+Epoch 81: val_loss did not improve from 0.18401
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9284 - loss: 0.1833 - val_accuracy: 0.9284 - val_loss: 0.1925
+Epoch 82/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9285 - loss: 0.1832
+Epoch 82: val_loss did not improve from 0.18401
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9285 - loss: 0.1832 - val_accuracy: 0.9305 - val_loss: 0.1881
+Epoch 83/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9286 - loss: 0.1831
+Epoch 83: val_loss did not improve from 0.18401
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9286 - loss: 0.1831 - val_accuracy: 0.9305 - val_loss: 0.1894
+Epoch 84/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9285 - loss: 0.1826
+Epoch 84: val_loss improved from 0.18401 to 0.18060, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9285 - loss: 0.1826 - val_accuracy: 0.9324 - val_loss: 0.1806
+Epoch 85/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9298 - loss: 0.1800
+Epoch 85: val_loss did not improve from 0.18060
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9298 - loss: 0.1800 - val_accuracy: 0.9319 - val_loss: 0.1844
+Epoch 86/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9283 - loss: 0.1831
+Epoch 86: val_loss did not improve from 0.18060
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9283 - loss: 0.1831 - val_accuracy: 0.9322 - val_loss: 0.1807
+Epoch 87/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9285 - loss: 0.1826
+Epoch 87: val_loss did not improve from 0.18060
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9285 - loss: 0.1826 - val_accuracy: 0.9318 - val_loss: 0.1842
+Epoch 88/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9293 - loss: 0.1813
+Epoch 88: val_loss did not improve from 0.18060
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9293 - loss: 0.1813 - val_accuracy: 0.9315 - val_loss: 0.1838
+Epoch 89/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9295 - loss: 0.1803
+Epoch 89: val_loss did not improve from 0.18060
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9295 - loss: 0.1803 - val_accuracy: 0.9323 - val_loss: 0.1816
+Epoch 90/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9298 - loss: 0.1797
+Epoch 90: val_loss improved from 0.18060 to 0.17762, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9298 - loss: 0.1797 - val_accuracy: 0.9334 - val_loss: 0.1776
+Epoch 91/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9298 - loss: 0.1794
+Epoch 91: val_loss did not improve from 0.17762
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9298 - loss: 0.1794 - val_accuracy: 0.9321 - val_loss: 0.1856
+Epoch 92/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9303 - loss: 0.1786
+Epoch 92: val_loss did not improve from 0.17762
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9303 - loss: 0.1786 - val_accuracy: 0.9335 - val_loss: 0.1780
+Epoch 93/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9304 - loss: 0.1780
+Epoch 93: val_loss did not improve from 0.17762
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.9304 - loss: 0.1780 - val_accuracy: 0.9312 - val_loss: 0.1872
+Epoch 94/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9304 - loss: 0.1777
+Epoch 94: val_loss improved from 0.17762 to 0.17623, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9304 - loss: 0.1777 - val_accuracy: 0.9338 - val_loss: 0.1762
+Epoch 95/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9302 - loss: 0.1782
+Epoch 95: val_loss did not improve from 0.17623
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9302 - loss: 0.1782 - val_accuracy: 0.9338 - val_loss: 0.1774
+Epoch 96/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9306 - loss: 0.1775
+Epoch 96: val_loss did not improve from 0.17623
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9306 - loss: 0.1775 - val_accuracy: 0.9333 - val_loss: 0.1803
+Epoch 97/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9306 - loss: 0.1778
+Epoch 97: val_loss improved from 0.17623 to 0.17517, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9306 - loss: 0.1778 - val_accuracy: 0.9343 - val_loss: 0.1752
+Epoch 98/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9321 - loss: 0.1742
+Epoch 98: val_loss improved from 0.17517 to 0.17264, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9321 - loss: 0.1742 - val_accuracy: 0.9349 - val_loss: 0.1726
+Epoch 99/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9311 - loss: 0.1767
+Epoch 99: val_loss did not improve from 0.17264
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9311 - loss: 0.1767 - val_accuracy: 0.9343 - val_loss: 0.1769
+Epoch 100/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9312 - loss: 0.1759
+Epoch 100: val_loss did not improve from 0.17264
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9312 - loss: 0.1759 - val_accuracy: 0.9332 - val_loss: 0.1803
+Epoch 101/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9322 - loss: 0.1740
+Epoch 101: val_loss did not improve from 0.17264
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9322 - loss: 0.1740 - val_accuracy: 0.9350 - val_loss: 0.1734
+Epoch 102/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9315 - loss: 0.1754
+Epoch 102: val_loss did not improve from 0.17264
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9315 - loss: 0.1754 - val_accuracy: 0.9344 - val_loss: 0.1750
+Epoch 103/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9312 - loss: 0.1758
+Epoch 103: val_loss improved from 0.17264 to 0.17240, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9312 - loss: 0.1758 - val_accuracy: 0.9354 - val_loss: 0.1724
+Epoch 104/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9320 - loss: 0.1739
+Epoch 104: val_loss did not improve from 0.17240
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9320 - loss: 0.1739 - val_accuracy: 0.9344 - val_loss: 0.1744
+Epoch 105/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9315 - loss: 0.1755
+Epoch 105: val_loss did not improve from 0.17240
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9315 - loss: 0.1755 - val_accuracy: 0.9350 - val_loss: 0.1759
+Epoch 106/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9321 - loss: 0.1739
+Epoch 106: val_loss did not improve from 0.17240
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9321 - loss: 0.1739 - val_accuracy: 0.9355 - val_loss: 0.1726
+Epoch 107/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9321 - loss: 0.1733
+Epoch 107: val_loss improved from 0.17240 to 0.17184, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 6ms/step - accuracy: 0.9321 - loss: 0.1733 - val_accuracy: 0.9360 - val_loss: 0.1718
+Epoch 108/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9323 - loss: 0.1733
+Epoch 108: val_loss did not improve from 0.17184
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9323 - loss: 0.1733 - val_accuracy: 0.9346 - val_loss: 0.1761
+Epoch 109/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9317 - loss: 0.1743
+Epoch 109: val_loss did not improve from 0.17184
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9317 - loss: 0.1743 - val_accuracy: 0.9349 - val_loss: 0.1758
+Epoch 110/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9324 - loss: 0.1731
+Epoch 110: val_loss did not improve from 0.17184
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9324 - loss: 0.1731 - val_accuracy: 0.9360 - val_loss: 0.1721
+Epoch 111/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9327 - loss: 0.1722
+Epoch 111: val_loss did not improve from 0.17184
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 15s 5ms/step - accuracy: 0.9327 - loss: 0.1722 - val_accuracy: 0.9357 - val_loss: 0.1744
+Epoch 112/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9329 - loss: 0.1721
+Epoch 112: val_loss did not improve from 0.17184
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9329 - loss: 0.1721 - val_accuracy: 0.9359 - val_loss: 0.1723
+Epoch 113/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9334 - loss: 0.1704
+Epoch 113: val_loss improved from 0.17184 to 0.17180, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9334 - loss: 0.1704 - val_accuracy: 0.9363 - val_loss: 0.1718
+Epoch 114/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9329 - loss: 0.1716
+Epoch 114: val_loss did not improve from 0.17180
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9329 - loss: 0.1716 - val_accuracy: 0.9362 - val_loss: 0.1718
+Epoch 115/150
+2995/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9337 - loss: 0.1696
+Epoch 115: val_loss did not improve from 0.17180
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9337 - loss: 0.1696 - val_accuracy: 0.9360 - val_loss: 0.1723
+Epoch 116/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9330 - loss: 0.1713
+Epoch 116: val_loss did not improve from 0.17180
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9330 - loss: 0.1713 - val_accuracy: 0.9367 - val_loss: 0.1730
+Epoch 117/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9335 - loss: 0.1696
+Epoch 117: val_loss did not improve from 0.17180
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9335 - loss: 0.1696 - val_accuracy: 0.9365 - val_loss: 0.1729
+Epoch 118/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9339 - loss: 0.1690
+Epoch 118: val_loss improved from 0.17180 to 0.16796, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9339 - loss: 0.1690 - val_accuracy: 0.9371 - val_loss: 0.1680
+Epoch 119/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9334 - loss: 0.1699
+Epoch 119: val_loss did not improve from 0.16796
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 19s 5ms/step - accuracy: 0.9334 - loss: 0.1699 - val_accuracy: 0.9367 - val_loss: 0.1721
+Epoch 120/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9344 - loss: 0.1681
+Epoch 120: val_loss did not improve from 0.16796
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9344 - loss: 0.1681 - val_accuracy: 0.9375 - val_loss: 0.1680
+Epoch 121/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9344 - loss: 0.1678
+Epoch 121: val_loss did not improve from 0.16796
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9344 - loss: 0.1678 - val_accuracy: 0.9354 - val_loss: 0.1711
+Epoch 122/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9345 - loss: 0.1676
+Epoch 122: val_loss improved from 0.16796 to 0.16701, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9345 - loss: 0.1676 - val_accuracy: 0.9376 - val_loss: 0.1670
+Epoch 123/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9340 - loss: 0.1686
+Epoch 123: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 15s 5ms/step - accuracy: 0.9340 - loss: 0.1686 - val_accuracy: 0.9373 - val_loss: 0.1679
+Epoch 124/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9341 - loss: 0.1683
+Epoch 124: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9341 - loss: 0.1683 - val_accuracy: 0.9360 - val_loss: 0.1742
+Epoch 125/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9344 - loss: 0.1676
+Epoch 125: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9344 - loss: 0.1676 - val_accuracy: 0.9364 - val_loss: 0.1716
+Epoch 126/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9347 - loss: 0.1675
+Epoch 126: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9347 - loss: 0.1675 - val_accuracy: 0.9373 - val_loss: 0.1686
+Epoch 127/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9347 - loss: 0.1671
+Epoch 127: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9347 - loss: 0.1671 - val_accuracy: 0.9374 - val_loss: 0.1702
+Epoch 128/150
+2990/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9349 - loss: 0.1667
+Epoch 128: val_loss did not improve from 0.16701
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9349 - loss: 0.1667 - val_accuracy: 0.9378 - val_loss: 0.1691
+Epoch 129/150
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9352 - loss: 0.1661
+Epoch 129: val_loss improved from 0.16701 to 0.16661, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9352 - loss: 0.1661 - val_accuracy: 0.9379 - val_loss: 0.1666
+Epoch 130/150
+2998/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9348 - loss: 0.1663
+Epoch 130: val_loss did not improve from 0.16661
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9348 - loss: 0.1663 - val_accuracy: 0.9377 - val_loss: 0.1683
+Epoch 131/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9351 - loss: 0.1654
+Epoch 131: val_loss did not improve from 0.16661
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9351 - loss: 0.1654 - val_accuracy: 0.9383 - val_loss: 0.1666
+Epoch 132/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9344 - loss: 0.1674
+Epoch 132: val_loss did not improve from 0.16661
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9344 - loss: 0.1674 - val_accuracy: 0.9372 - val_loss: 0.1693
+Epoch 133/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9353 - loss: 0.1652
+Epoch 133: val_loss improved from 0.16661 to 0.16333, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9353 - loss: 0.1652 - val_accuracy: 0.9389 - val_loss: 0.1633
+Epoch 134/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9350 - loss: 0.1658
+Epoch 134: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9350 - loss: 0.1658 - val_accuracy: 0.9390 - val_loss: 0.1650
+Epoch 135/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9354 - loss: 0.1648
+Epoch 135: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9354 - loss: 0.1648 - val_accuracy: 0.9389 - val_loss: 0.1645
+Epoch 136/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9357 - loss: 0.1644
+Epoch 136: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9357 - loss: 0.1644 - val_accuracy: 0.9375 - val_loss: 0.1679
+Epoch 137/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9361 - loss: 0.1635
+Epoch 137: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9361 - loss: 0.1635 - val_accuracy: 0.9383 - val_loss: 0.1674
+Epoch 138/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9362 - loss: 0.1630
+Epoch 138: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9362 - loss: 0.1630 - val_accuracy: 0.9381 - val_loss: 0.1666
+Epoch 139/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9356 - loss: 0.1644
+Epoch 139: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9356 - loss: 0.1644 - val_accuracy: 0.9391 - val_loss: 0.1663
+Epoch 140/150
+2993/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9352 - loss: 0.1654
+Epoch 140: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9352 - loss: 0.1654 - val_accuracy: 0.9373 - val_loss: 0.1712
+Epoch 141/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9361 - loss: 0.1633
+Epoch 141: val_loss did not improve from 0.16333
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9361 - loss: 0.1633 - val_accuracy: 0.9392 - val_loss: 0.1644
+Epoch 142/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9362 - loss: 0.1633
+Epoch 142: val_loss improved from 0.16333 to 0.16189, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 22s 6ms/step - accuracy: 0.9362 - loss: 0.1633 - val_accuracy: 0.9399 - val_loss: 0.1619
+Epoch 143/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9350 - loss: 0.1656
+Epoch 143: val_loss did not improve from 0.16189
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9350 - loss: 0.1656 - val_accuracy: 0.9390 - val_loss: 0.1636
+Epoch 144/150
+2996/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9360 - loss: 0.1632
+Epoch 144: val_loss improved from 0.16189 to 0.16162, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 17s 6ms/step - accuracy: 0.9360 - loss: 0.1632 - val_accuracy: 0.9399 - val_loss: 0.1616
+Epoch 145/150
+2999/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9361 - loss: 0.1633
+Epoch 145: val_loss did not improve from 0.16162
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9361 - loss: 0.1633 - val_accuracy: 0.9397 - val_loss: 0.1634
+Epoch 146/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9361 - loss: 0.1633
+Epoch 146: val_loss improved from 0.16162 to 0.16132, saving model to ./test20k/test20k_best_weights.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9361 - loss: 0.1633 - val_accuracy: 0.9401 - val_loss: 0.1613
+Epoch 147/150
+2991/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9366 - loss: 0.1618
+Epoch 147: val_loss did not improve from 0.16132
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9366 - loss: 0.1618 - val_accuracy: 0.9394 - val_loss: 0.1647
+Epoch 148/150
+2994/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9363 - loss: 0.1627
+Epoch 148: val_loss did not improve from 0.16132
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 21s 5ms/step - accuracy: 0.9363 - loss: 0.1627 - val_accuracy: 0.9397 - val_loss: 0.1629
+Epoch 149/150
+2997/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9369 - loss: 0.1613
+Epoch 149: val_loss did not improve from 0.16132
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 20s 5ms/step - accuracy: 0.9369 - loss: 0.1613 - val_accuracy: 0.9396 - val_loss: 0.1626
+Epoch 150/150
+2992/3000 ━━━━━━━━━━━━━━━━━━━━ 0s 5ms/step - accuracy: 0.9366 - loss: 0.1618
+Epoch 150: val_loss did not improve from 0.16132
+3000/3000 ━━━━━━━━━━━━━━━━━━━━ 16s 5ms/step - accuracy: 0.9366 - loss: 0.1618 - val_accuracy: 0.9403 - val_loss: 0.1619

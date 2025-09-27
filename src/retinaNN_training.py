@@ -9,14 +9,14 @@
 
 
 import numpy as np
-import ConfigParser
+import configparser
 
 from keras.models import Model
-from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, UpSampling2D, Reshape, core, Dropout
+from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, UpSampling2D, Reshape, Permute, Activation, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
-from keras.utils.vis_utils import plot_model as plot
+from keras.utils import plot_model as plot
 from keras.optimizers import SGD
 
 import sys
@@ -30,38 +30,43 @@ from extract_patches import get_data_training
 
 #Define the neural network
 def get_unet(n_ch,patch_height,patch_width):
-    inputs = Input(shape=(n_ch,patch_height,patch_width))
-    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same',data_format='channels_first')(inputs)
+    # POIN 1: Mengubah input shape ke channels_last
+    inputs = Input(shape=(patch_height,patch_width,n_ch))
+    
+    # POIN 1: Menghapus data_format dari semua Conv2D
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
     conv1 = Dropout(0.2)(conv1)
-    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same',data_format='channels_first')(conv1)
+    conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv1)
     pool1 = MaxPooling2D((2, 2))(conv1)
     #
-    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same',data_format='channels_first')(pool1)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool1)
     conv2 = Dropout(0.2)(conv2)
-    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same',data_format='channels_first')(conv2)
+    conv2 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv2)
     pool2 = MaxPooling2D((2, 2))(conv2)
     #
-    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same',data_format='channels_first')(pool2)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool2)
     conv3 = Dropout(0.2)(conv3)
-    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same',data_format='channels_first')(conv3)
+    conv3 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv3)
 
     up1 = UpSampling2D(size=(2, 2))(conv3)
-    up1 = concatenate([conv2,up1],axis=1)
-    conv4 = Conv2D(64, (3, 3), activation='relu', padding='same',data_format='channels_first')(up1)
+    # POIN 1: Mengubah axis concatenate
+    up1 = concatenate([conv2,up1],axis=-1)
+    conv4 = Conv2D(64, (3, 3), activation='relu', padding='same')(up1)
     conv4 = Dropout(0.2)(conv4)
-    conv4 = Conv2D(64, (3, 3), activation='relu', padding='same',data_format='channels_first')(conv4)
+    conv4 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv4)
     #
     up2 = UpSampling2D(size=(2, 2))(conv4)
-    up2 = concatenate([conv1,up2], axis=1)
-    conv5 = Conv2D(32, (3, 3), activation='relu', padding='same',data_format='channels_first')(up2)
+    # POIN 1: Mengubah axis concatenate
+    up2 = concatenate([conv1,up2], axis=-1)
+    conv5 = Conv2D(32, (3, 3), activation='relu', padding='same')(up2)
     conv5 = Dropout(0.2)(conv5)
-    conv5 = Conv2D(32, (3, 3), activation='relu', padding='same',data_format='channels_first')(conv5)
+    conv5 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv5)
     #
-    conv6 = Conv2D(2, (1, 1), activation='relu',padding='same',data_format='channels_first')(conv5)
-    conv6 = core.Reshape((2,patch_height*patch_width))(conv6)
-    conv6 = core.Permute((2,1))(conv6)
+    conv6 = Conv2D(2, (1, 1), activation='relu',padding='same')(conv5)
+    conv6 = Reshape((2,patch_height*patch_width))(conv6)
+    conv6 = Permute((2,1))(conv6)
     ############
-    conv7 = core.Activation('softmax')(conv6)
+    conv7 = Activation('softmax')(conv6)
 
     model = Model(inputs=inputs, outputs=conv7)
 
@@ -73,6 +78,7 @@ def get_unet(n_ch,patch_height,patch_width):
 #Define the neural network gnet
 #you need change function call "get_unet" to "get_gnet" in line 166 before use this network
 def get_gnet(n_ch,patch_height,patch_width):
+    # PERINGATAN: Fungsi ini masih menggunakan sintaks Keras lama dan akan error jika dijalankan.
     inputs = Input((n_ch, patch_height, patch_width))
     conv1 = Convolution2D(32, 3, 3, activation='relu', border_mode='same')(inputs)
     conv1 = Dropout(0.2)(conv1)
@@ -119,10 +125,10 @@ def get_gnet(n_ch,patch_height,patch_width):
     conv9 = Convolution2D(32, 3, 3, activation='relu', border_mode='same')(conv9)
     #
     conv10 = Convolution2D(2, 1, 1, activation='relu', border_mode='same')(conv9)
-    conv10 = core.Reshape((2,patch_height*patch_width))(conv10)
-    conv10 = core.Permute((2,1))(conv10)
+    conv10 = Reshape((2,patch_height*patch_width))(conv10)
+    conv10 = Permute((2,1))(conv10)
     ############
-    conv10 = core.Activation('softmax')(conv10)
+    conv10 = Activation('softmax')(conv10)
 
     model = Model(input=inputs, output=conv10)
 
@@ -132,7 +138,7 @@ def get_gnet(n_ch,patch_height,patch_width):
     return model
 
 #========= Load settings from Config file
-config = ConfigParser.RawConfigParser()
+config = configparser.RawConfigParser()
 config.read('configuration.txt')
 #patch to the datasets
 path_data = config.get('data paths', 'path_local')
@@ -162,12 +168,13 @@ visualize(group_images(patches_masks_train[0:N_sample,:,:,:],5),'./'+name_experi
 
 
 #=========== Construct and save the model arcitecture =====
-n_ch = patches_imgs_train.shape[1]
+# Mengambil shape data SETELAH di-transpose nantinya
+n_ch = 1 # Langsung set ke 1 karena channel akan ada di akhir
 patch_height = patches_imgs_train.shape[2]
 patch_width = patches_imgs_train.shape[3]
 model = get_unet(n_ch, patch_height, patch_width)  #the U-net model
-print "Check: final output of the network:"
-print model.output_shape
+print ("Check: final output of the network:")
+print (model.output_shape)
 plot(model, to_file='./'+name_experiment+'/'+name_experiment + '_model.png')   #check how the model looks like
 json_string = model.to_json()
 open('./'+name_experiment+'/'+name_experiment +'_architecture.json', 'w').write(json_string)
@@ -188,31 +195,16 @@ checkpointer = ModelCheckpoint(filepath='./'+name_experiment+'/'+name_experiment
 # lrate_drop = LearningRateScheduler(step_decay)
 
 patches_masks_train = masks_Unet(patches_masks_train)  #reduce memory consumption
-model.fit(patches_imgs_train, patches_masks_train, nb_epoch=N_epochs, batch_size=batch_size, verbose=2, shuffle=True, validation_split=0.1, callbacks=[checkpointer])
+
+# POIN 2: Mengubah data dari (N, C, H, W) menjadi (N, H, W, C)
+patches_imgs_train = np.transpose(patches_imgs_train, (0, 2, 3, 1))
+
+model.fit(patches_imgs_train, patches_masks_train, epochs=N_epochs, batch_size=batch_size, verbose=1, shuffle=True, validation_split=0.1, callbacks=[checkpointer])
 
 
 #========== Save and test the last model ===================
-model.save_weights('./'+name_experiment+'/'+name_experiment +'_last_weights.h5', overwrite=True)
+model.save_weights('./'+name_experiment+'/'+name_experiment +'_last.weights.h5', overwrite=True)
 #test the model
 # score = model.evaluate(patches_imgs_test, masks_Unet(patches_masks_test), verbose=0)
 # print('Test score:', score[0])
 # print('Test accuracy:', score[1])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
