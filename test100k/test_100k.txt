@@ -1,0 +1,698 @@
+1. Create directory for the results (if not already existing)
+
+2. Run the prediction on GPU (no nohup)
+2025-09-27 10:38:10.761269: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1758969490.782898    3918 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1758969490.789501    3918 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+I0000 00:00:1758969494.765750    3918 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 15513 MB memory:  -> device: 0, name: Tesla P100-PCIE-16GB, pci bus id: 0000:00:04.0, compute capability: 6.0
+Predicting image 1/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1758969496.498389    3939 service.cc:148] XLA service 0x7be368003970 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+I0000 00:00:1758969496.498451    3939 service.cc:156]   StreamExecutor device (0): Tesla P100-PCIE-16GB, Compute Capability 6.0
+I0000 00:00:1758969496.584481    3939 cuda_dnn.cc:529] Loaded cuDNN version 90300
+I0000 00:00:1758969497.531678    3939 device_compiler.h:188] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 2/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 3/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 4/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 5/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 6/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 7/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 8/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 9/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 10/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 11/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 12/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 13/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 14/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 15/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 16/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 17/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 18/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 19/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Predicting image 20/20
+
+the side H is not compatible with the selected stride of 5
+img_h 584, patch_h 48, stride_h 5
+(img_h - patch_h) MOD stride_h: 1
+So the H dim will be padded with additional 4 pixels
+the side W is not compatible with the selected stride of 5
+img_w 565, patch_w 48, stride_w 5
+(img_w - patch_w) MOD stride_w: 2
+So the W dim will be padded with additional 3 pixels
+new full images shape: 
+(1, 1, 588, 568)
+
+test images shape:
+(1, 1, 588, 568)
+
+test mask shape:
+(1, 1, 584, 565)
+test images range (min-max): 0.0 - 1.0
+test masks are within 0-1
+
+Number of patches on h : 109
+Number of patches on w : 105
+number of patches per image: 11445, totally for this dataset: 11445
+
+test PATCHES images shape:
+(11445, 1, 48, 48)
+test PATCHES images range (min-max): 0.0 - 1.0
+N_patches_h: 109
+N_patches_w: 105
+N_patches_img: 11445
+According to the dimension inserted, there are 1 full images (of 588x568 each)
+(1, 588, 568, 1)
+Orig imgs shape: (20, 1, 584, 565)
+pred imgs shape: (20, 1, 584, 565)
+Gtruth imgs shape: (20, 1, 584, 565)
+
+
+========  Evaluate the results =======================
+Calculating results only inside the FOV:
+y scores pixels: 4538143
+y true pixels: 4538143
+
+Area under the ROC curve: 0.9710367200804
+
+Area under Precision-Recall curve: 0.8872499922325252
+
+Confusion matrix:  Custom threshold (for positive) of 0.5
+[[3901714   58780]
+ [ 165258  412391]]
+Global Accuracy: 0.9506322299671914
+Specificity: 0.9851584171065528
+Sensitivity: 0.7139127740202095
+Precision: 0.875246991007511
+
+Jaccard similarity score: 0.6479764435624398
+
+F1 score (F-measure): 0.7863904197097691
