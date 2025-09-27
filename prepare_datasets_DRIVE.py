@@ -14,9 +14,7 @@ def write_hdf5(arr,outfile):
     f.create_dataset("image", data=arr, dtype=arr.dtype)
 
 #-------------Path of the images --------------------------------------------------------------
-# Ganti "retina-datasets" dengan nama dataset Anda di Kaggle
-#-------------Path of the images --------------------------------------------------------------
-# Path disesuaikan dengan nama dataset Anda di Kaggle
+# Ganti "retina-dataset" dengan nama dataset Anda di Kaggle
 base_input_path = "/kaggle/input/retina-dataset/DRIVE/"
 
 #train
@@ -27,7 +25,6 @@ border_masks_train = base_input_path + "training/mask/"
 original_imgs_test = base_input_path + "test/images/"
 groundTruth_imgs_test = base_input_path + "test/1st_manual/"
 border_masks_test = base_input_path + "test/mask/"
-#---------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------
 
 Nimgs = 20
@@ -41,29 +38,32 @@ def get_datasets(imgs_dir,groundTruth_dir,borderMasks_dir,train_test="null"):
     imgs = np.empty((Nimgs,height,width,channels))
     groundTruth = np.empty((Nimgs,height,width))
     border_masks = np.empty((Nimgs,height,width))
-    for path, subdirs, files in os.walk(imgs_dir): #list all files, directories in the path
-        for i in range(len(files)):
-            #original
-            print("original image: " +files[i])
-            img = Image.open(imgs_dir+files[i])
-            imgs[i] = np.asarray(img)
-            #corresponding ground truth
-            groundTruth_name = files[i][0:2] + "_manual1.gif"
-            print("ground truth name: " + groundTruth_name)
-            g_truth = Image.open(groundTruth_dir + groundTruth_name)
-            groundTruth[i] = np.asarray(g_truth)
-            #corresponding border masks
-            border_masks_name = ""
-            if train_test=="train":
-                border_masks_name = files[i][0:2] + "_training_mask.gif"
-            elif train_test=="test":
-                border_masks_name = files[i][0:2] + "_test_mask.gif"
-            else:
-                print("specify if train or test!!")
-                exit()
-            print("border masks name: " + border_masks_name)
-            b_mask = Image.open(borderMasks_dir + border_masks_name)
-            border_masks[i] = np.asarray(b_mask)
+    
+    # Urutkan file agar konsisten
+    files = sorted(os.listdir(imgs_dir))
+
+    for i in range(len(files)):
+        #original
+        print("original image: " +files[i])
+        img = Image.open(os.path.join(imgs_dir, files[i]))
+        imgs[i] = np.asarray(img)
+        #corresponding ground truth
+        groundTruth_name = files[i][0:2] + "_manual1.gif"
+        print("ground truth name: " + groundTruth_name)
+        g_truth = Image.open(os.path.join(groundTruth_dir, groundTruth_name))
+        groundTruth[i] = np.asarray(g_truth)
+        #corresponding border masks
+        border_masks_name = ""
+        if train_test=="train":
+            border_masks_name = files[i][0:2] + "_training_mask.gif"
+        elif train_test=="test":
+            border_masks_name = files[i][0:2] + "_test_mask.gif"
+        else:
+            print("specify if train or test!!")
+            exit()
+        print("border masks name: " + border_masks_name)
+        b_mask = Image.open(os.path.join(borderMasks_dir, border_masks_name))
+        border_masks[i] = np.asarray(b_mask)
 
     print("imgs max: " +str(np.max(imgs)))
     print("imgs min: " +str(np.min(imgs)))
@@ -83,15 +83,15 @@ if not os.path.exists(dataset_path):
     os.makedirs(dataset_path)
 
 #getting the training datasets
-imgs_train, groundTruth_train, border_masks_train = get_datasets(original_imgs_train,groundTruth_imgs_train,border_masks_train_path,"train")
+imgs_train, groundTruth_train, border_masks_train_data = get_datasets(original_imgs_train,groundTruth_imgs_train,border_masks_train,"train")
 print("saving train datasets")
 write_hdf5(imgs_train, dataset_path + "DRIVE_dataset_imgs_train.hdf5")
 write_hdf5(groundTruth_train, dataset_path + "DRIVE_dataset_groundTruth_train.hdf5")
-write_hdf5(border_masks_train,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
+write_hdf5(border_masks_train_data,dataset_path + "DRIVE_dataset_borderMasks_train.hdf5")
 
 #getting the testing datasets
-imgs_test, groundTruth_test, border_masks_test = get_datasets(original_imgs_test,groundTruth_imgs_test,border_masks_test_path,"test")
+imgs_test, groundTruth_test, border_masks_test_data = get_datasets(original_imgs_test,groundTruth_imgs_test,border_masks_test,"test")
 print("saving test datasets")
 write_hdf5(imgs_test,dataset_path + "DRIVE_dataset_imgs_test.hdf5")
 write_hdf5(groundTruth_test, dataset_path + "DRIVE_dataset_groundTruth_test.hdf5")
-write_hdf5(border_masks_test,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
+write_hdf5(border_masks_test_data,dataset_path + "DRIVE_dataset_borderMasks_test.hdf5")
