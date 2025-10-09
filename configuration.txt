@@ -11,7 +11,7 @@ test_border_masks = DRIVE_dataset_borderMasks_test.hdf5
 
 
 [experiment name]
-name = test120k_8
+name = test160k_8
 
 
 [data attributes]
@@ -22,7 +22,7 @@ patch_width = 48
 
 [training settings]
 #number of total patches:
-N_subimgs = 120000
+N_subimgs = 160000
 #if patches are extracted only inside the field of view:
 inside_FOV = False
 #Number of training epochs
