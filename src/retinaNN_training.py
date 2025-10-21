@@ -72,7 +72,7 @@ def get_unet(n_ch,patch_height,patch_width):
 
     ## sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.3, nesterov=False)
     # model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy',metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy',metrics=['accuracy'])
 
     return model
 
@@ -135,7 +135,7 @@ def get_gnet(n_ch,patch_height,patch_width):
 
     ## sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
     # model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
-    model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy',metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy',metrics=['accuracy'])
 
     return model
 
