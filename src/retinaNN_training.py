@@ -17,7 +17,7 @@ from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as K
 from keras.utils import plot_model as plot
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 
 import sys
 sys.path.insert(0, './lib/')
@@ -70,8 +70,9 @@ def get_unet(n_ch,patch_height,patch_width):
 
     model = Model(inputs=inputs, outputs=conv7)
 
-    # sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.3, nesterov=False)
-    model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
+    ## sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.3, nesterov=False)
+    # model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=0.0001), loss='categorical_crossentropy',metrics=['accuracy'])
 
     return model
 
@@ -132,8 +133,9 @@ def get_gnet(n_ch,patch_height,patch_width):
 
     model = Model(input=inputs, output=conv10)
 
-    # sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
-    model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
+    ## sgd = SGD(lr=0.01, decay=1e-6, momentum=0.3, nesterov=False)
+    # model.compile(optimizer='sgd', loss='categorical_crossentropy',metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy',metrics=['accuracy'])
 
     return model
 
