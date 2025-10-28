@@ -91,8 +91,14 @@ N_visual = int(config.get('testing settings', 'N_group_visual'))
 
 #================ Load model ==================================
 best_last = config.get('testing settings', 'best_last')
-# Pemanggilan ini sekarang akan berhasil karena Initializer sudah terdaftar
-model = model_from_json(open(path_experiment+name_experiment +'_architecture.json').read())
+
+# PERBAIKAN: Tambahkan custom_objects saat memuat model
+custom_objects = {'ChebyshevInitializer': ChebyshevInitializer}
+model = model_from_json(
+    open(path_experiment+name_experiment +'_architecture.json').read(),
+    custom_objects=custom_objects # <-- Argumen ditambahkan di sini
+)
+
 try:
     model.load_weights(path_experiment+name_experiment + '_'+best_last+'.weights.h5')
 except IOError:
