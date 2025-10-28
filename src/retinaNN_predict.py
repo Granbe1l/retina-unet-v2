@@ -37,7 +37,7 @@ from extract_patches import recompone_overlap, pred_only_FOV, get_data_testing_o
 from pre_processing import my_PreProc
 
 # =================================================================
-# ## TAMBAHKAN DEFINISI KELAS INITIALIZER DI SINI
+# ## DEFINISI KELAS INITIALIZER DITAMBAHKAN DI SINI
 # =================================================================
 @keras.saving.register_keras_serializable() # <-- Dekorator Registrasi
 class ChebyshevInitializer(initializers.Initializer):
@@ -130,9 +130,6 @@ for i in range(Imgs_to_test):
 
     pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
 
-    # HAPUS transpose di baris berikut JIKA extract_patches.py Anda versi ASLI
-    # pred_patches = np.transpose(pred_patches, (0, 2, 3, 1))
-
     # recompone_overlap asli mengharapkan channels_first
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
 
@@ -153,7 +150,6 @@ gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
 print("Orig imgs shape: " + str(orig_imgs.shape))
 print("pred imgs shape: " + str(pred_imgs.shape))
 print("Gtruth imgs shape: " + str(gtruth_masks.shape))
-# ... (sisa kode visualisasi dan evaluasi sama persis) ...
 visualize(group_images(orig_imgs, N_visual), path_experiment + "all_originals")
 visualize(group_images(pred_imgs, N_visual), path_experiment + "all_predictions")
 visualize(group_images(gtruth_masks, N_visual), path_experiment + "all_groundTruths")
