@@ -46,6 +46,8 @@ class ChebyshevInitializer(initializers.Initializer):
         self.at = at
 
     def __call__(self, shape, dtype=None):
+        # Targetkan kernel depthwise dari SeparableConv2D
+        # Shape: (height, width, in_channels, depth_multiplier=1)
         if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 1:
             kernel_height, kernel_width, input_channels, _ = shape
             cheb_window_1d_h = chebwin(kernel_height, at=self.at)
@@ -58,6 +60,7 @@ class ChebyshevInitializer(initializers.Initializer):
                  final_weights[:, :, i, 0] = cheb_kernel_2d
             return tf.convert_to_tensor(final_weights, dtype=dtype)
         else:
+            # Untuk kernel pointwise atau bias, gunakan initializer standar Keras
             return initializers.GlorotUniform()(shape, dtype=dtype)
 
     def get_config(self):
@@ -88,14 +91,18 @@ N_visual = int(config.get('testing settings', 'N_group_visual'))
 
 #================ Load model ==================================
 best_last = config.get('testing settings', 'best_last')
+
+# PERBAIKAN: Tambahkan custom_objects saat memuat model
 custom_objects = {'ChebyshevInitializer': ChebyshevInitializer}
 model = model_from_json(
     open(path_experiment+name_experiment +'_architecture.json').read(),
-    custom_objects=custom_objects
+    custom_objects=custom_objects # <-- Argumen ditambahkan di sini
 )
+
 try:
     model.load_weights(path_experiment+name_experiment + '_'+best_last+'.weights.h5')
 except IOError:
+    # Fallback jika nama file bobot masih format lama
     model.load_weights(path_experiment+name_experiment + '_'+best_last+'_weights.h5')
 
 #======= PREDICTION LOOP =========
@@ -112,6 +119,7 @@ for i in range(Imgs_to_test):
     with h5py.File('temp_mask.hdf5', 'w') as hf:
         hf.create_dataset('image', data=gtruth_single)
 
+    # Diasumsikan extract_patches.py versi ASLI
     patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
         DRIVE_test_imgs_original='temp_img.hdf5',
         DRIVE_test_groudTruth='temp_mask.hdf5',
@@ -122,11 +130,19 @@ for i in range(Imgs_to_test):
         stride_width=stride_width
     )
 
-    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1)) 
-    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0)
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original")
+    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1)) # Ke channels_last untuk model
+
+    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0) # Hasilnya 3D
+
+    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
+
+    # ===================================================================
+    # BARIS transpose SEBELUMNYA DIHAPUS DARI SINI
+    # ===================================================================
+
+    # recompone_overlap asli mengharapkan channels_first
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
-    
+
     all_predictions.append(pred_img)
     all_masks.append(masks_test)
 
@@ -134,12 +150,14 @@ pred_imgs = np.concatenate(all_predictions, axis=0)
 gtruth_masks = np.concatenate(all_masks, axis=0)
 
 #========== Proses selanjutnya ... ====================
+# pred_imgs sudah dalam format channels_first, jadi tidak perlu transpose
 orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])
 kill_border(pred_imgs, test_border_masks)
 orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
 pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
 gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
 
+# ... sisa kode evaluasi dan penyimpanan sama persis ...
 print("Orig imgs shape: " + str(orig_imgs.shape))
 print("pred imgs shape: " + str(pred_imgs.shape))
 print("Gtruth imgs shape: " + str(gtruth_masks.shape))
