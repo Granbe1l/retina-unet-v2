@@ -137,7 +137,7 @@ for i in range(Imgs_to_test):
     pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
 
     # ===================================================================
-    # BARIS transpose YANG SALAH SUDAH DIHAPUS DARI SINI
+    # BARIS transpose YANG MENYEBABKAN ERROR SUDAH DIHAPUS
     # ===================================================================
 
     # recompone_overlap asli mengharapkan channels_first
@@ -255,7 +255,7 @@ if float(confusion[1,1]+confusion[1,0])!=0:
 print ("Sensitivity: " +str(sensitivity))
 precision = 0
 if float(confusion[1,1]+confusion[0,1])!=0:
-    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[0,1])
+    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[1,0])
 print ("Precision: " +str(precision))
 
 #Jaccard similarity index

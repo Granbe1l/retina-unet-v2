@@ -1,283 +1,409 @@
-###################################################
-#
-#   Script to
-#   - Calculate prediction of the test dataset
-#   - Calculate the parameters to evaluate the prediction
-#
-##################################################
-
-#Python
 import numpy as np
+import random
 import configparser
-from matplotlib import pyplot as plt
-import h5py
-# Import tambahan yang dibutuhkan Initializer
-from scipy.signal.windows import chebwin
-from keras import initializers
-import tensorflow as tf
-import keras # Pastikan keras diimpor
 
-#Keras
-from keras.models import model_from_json
-from keras.models import Model
-#scikit learn
-from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_recall_curve
-from sklearn.metrics import jaccard_score
-from sklearn.metrics import f1_score
-import sys
-sys.path.insert(0, './lib/')
-# help_functions.py
-from help_functions import *
-# extract_patches.py
-from extract_patches import recompone_overlap, pred_only_FOV, get_data_testing_overlap, kill_border
-# pre_processing.py
+from help_functions import load_hdf5
+from help_functions import visualize
+from help_functions import group_images
+
 from pre_processing import my_PreProc
 
-# =================================================================
-# ## DEFINISI KELAS INITIALIZER DITAMBAHKAN DI SINI
-# =================================================================
-@keras.saving.register_keras_serializable() # <-- Dekorator Registrasi
-class ChebyshevInitializer(initializers.Initializer):
-    def __init__(self, kernel_size=(3, 3), at=80):
-        self.kernel_size = kernel_size
-        self.at = at
 
-    def __call__(self, shape, dtype=None):
-        # Targetkan kernel depthwise dari SeparableConv2D
-        # Shape: (height, width, in_channels, depth_multiplier=1)
-        if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 1:
-            kernel_height, kernel_width, input_channels, _ = shape
-            cheb_window_1d_h = chebwin(kernel_height, at=self.at)
-            cheb_window_1d_w = chebwin(kernel_width, at=self.at)
-            cheb_kernel_2d = np.outer(cheb_window_1d_h, cheb_window_1d_w)
-            if np.sum(cheb_kernel_2d) != 0:
-                cheb_kernel_2d /= np.sum(cheb_kernel_2d)
-            final_weights = np.zeros(shape)
-            for i in range(input_channels):
-                 final_weights[:, :, i, 0] = cheb_kernel_2d
-            return tf.convert_to_tensor(final_weights, dtype=dtype)
-        else:
-            # Untuk kernel pointwise atau bias, gunakan initializer standar Keras
-            return initializers.GlorotUniform()(shape, dtype=dtype)
+#To select the same images
+# random.seed(10)
 
-    def get_config(self):
-        return {"kernel_size": self.kernel_size, "at": self.at}
-# =================================================================
-
-#========= CONFIG FILE TO READ FROM =======
-config = configparser.RawConfigParser()
-config.read('configuration.txt')
-#===========================================
-path_data = config.get('data paths', 'path_local')
-DRIVE_test_imgs_original = path_data + config.get('data paths', 'test_imgs_original')
-test_imgs_orig = load_hdf5(DRIVE_test_imgs_original)
-full_img_height = test_imgs_orig.shape[2]
-full_img_width = test_imgs_orig.shape[3]
-DRIVE_test_border_masks = path_data + config.get('data paths', 'test_border_masks')
-test_border_masks = load_hdf5(DRIVE_test_border_masks)
-gtruth_path = path_data + config.get('data paths', 'test_groundTruth')
-gtruth_masks_all = load_hdf5(gtruth_path)
-patch_height = int(config.get('data attributes', 'patch_height'))
-patch_width = int(config.get('data attributes', 'patch_width'))
-stride_height = int(config.get('testing settings', 'stride_height'))
-stride_width = int(config.get('testing settings', 'stride_width'))
-name_experiment = config.get('experiment name', 'name')
-path_experiment = './' +name_experiment +'/'
-Imgs_to_test = int(config.get('testing settings', 'full_images_to_test'))
-N_visual = int(config.get('testing settings', 'N_group_visual'))
-
-#================ Load model ==================================
-best_last = config.get('testing settings', 'best_last')
-
-# PERBAIKAN: Tambahkan custom_objects saat memuat model
-custom_objects = {'ChebyshevInitializer': ChebyshevInitializer}
-model = model_from_json(
-    open(path_experiment+name_experiment +'_architecture.json').read(),
-    custom_objects=custom_objects # <-- Argumen ditambahkan di sini
-)
-
-try:
-    model.load_weights(path_experiment+name_experiment + '_'+best_last+'.weights.h5')
-except IOError:
-    # Fallback jika nama file bobot masih format lama
-    model.load_weights(path_experiment+name_experiment + '_'+best_last+'_weights.h5')
-
-#======= PREDICTION LOOP =========
-all_predictions = []
-all_masks = []
-for i in range(Imgs_to_test):
-    print("Predicting image " + str(i+1) + "/" + str(Imgs_to_test))
-
-    test_img_original_single = test_imgs_orig[i:i+1, ...]
-    gtruth_single = gtruth_masks_all[i:i+1, ...]
-
-    with h5py.File('temp_img.hdf5', 'w') as hf:
-        hf.create_dataset('image', data=test_img_original_single)
-    with h5py.File('temp_mask.hdf5', 'w') as hf:
-        hf.create_dataset('image', data=gtruth_single)
-
-    # Diasumsikan extract_patches.py versi ASLI
-    patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
-        DRIVE_test_imgs_original='temp_img.hdf5',
-        DRIVE_test_groudTruth='temp_mask.hdf5',
-        Imgs_to_test=1,
-        patch_height=patch_height,
-        patch_width=patch_width,
-        stride_height=stride_height,
-        stride_width=stride_width
-    )
-
-    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1)) # Ke channels_last untuk model
-
-    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0) # Hasilnya 3D
-
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
-
-    # ===================================================================
-    # BARIS transpose YANG MENYEBABKAN ERROR SUDAH DIHAPUS
-    # ===================================================================
-
-    # recompone_overlap asli mengharapkan channels_first
-    pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
-
-    all_predictions.append(pred_img)
-    all_masks.append(masks_test)
-
-pred_imgs = np.concatenate(all_predictions, axis=0)
-gtruth_masks = np.concatenate(all_masks, axis=0)
-
-#========== Proses selanjutnya ... ====================
-# pred_imgs sudah dalam format channels_first, jadi tidak perlu transpose
-orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])
-kill_border(pred_imgs, test_border_masks)
-orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
-pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
-gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
-
-# ... sisa kode evaluasi dan penyimpanan sama persis ...
-print("Orig imgs shape: " + str(orig_imgs.shape))
-print("pred imgs shape: " + str(pred_imgs.shape))
-print("Gtruth imgs shape: " + str(gtruth_masks.shape))
-visualize(group_images(orig_imgs, N_visual), path_experiment + "all_originals")
-visualize(group_images(pred_imgs, N_visual), path_experiment + "all_predictions")
-visualize(group_images(gtruth_masks, N_visual), path_experiment + "all_groundTruths")
-
-assert (orig_imgs.shape[0] == pred_imgs.shape[0] and orig_imgs.shape[0] == gtruth_masks.shape[0])
-N_predicted = orig_imgs.shape[0]
-group = N_visual
-assert (N_predicted % group == 0)
-for i in range(int(N_predicted / group)):
-    orig_stripe = group_images(orig_imgs[i * group:(i * group) + group, :, :, :], group)
-    masks_stripe = group_images(gtruth_masks[i * group:(i * group) + group, :, :, :], group)
-    pred_stripe = group_images(pred_imgs[i * group:(i * group) + group, :, :, :], group)
-    total_img = np.concatenate((orig_stripe, masks_stripe, pred_stripe), axis=0)
-    visualize(total_img, path_experiment + name_experiment + "_Original_GroundTruth_Prediction" + str(i))
+#Load the original data and return the extracted patches for training/testing
+def get_data_training(DRIVE_train_imgs_original,
+                      DRIVE_train_groudTruth,
+                      patch_height,
+                      patch_width,
+                      N_subimgs,
+                      inside_FOV):
+    train_imgs_original = load_hdf5(DRIVE_train_imgs_original)
+    train_masks = load_hdf5(DRIVE_train_groudTruth) #masks always the same
+    # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
 
 
-# ====== Evaluate the results
-print("\n\n========  Evaluate the results =======================")
-y_scores, y_true = pred_only_FOV(pred_imgs, gtruth_masks, test_border_masks)
-print("Calculating results only inside the FOV:")
-print("y scores pixels: " + str(y_scores.shape[0]))
-print("y true pixels: " + str(y_true.shape[0]))
+    train_imgs = my_PreProc(train_imgs_original)
+    train_masks = train_masks/255.
 
-#Area under the ROC curve
-fpr, tpr, thresholds = roc_curve((y_true), y_scores)
-AUC_ROC = roc_auc_score(y_true, y_scores)
-print ("\nArea under the ROC curve: " +str(AUC_ROC))
-roc_curve =plt.figure()
-plt.plot(fpr,tpr,'-',label='Area Under the Curve (AUC = %0.4f)' % AUC_ROC)
-plt.title('ROC curve')
-plt.xlabel("FPR (False Positive Rate)")
-plt.ylabel("TPR (True Positive Rate)")
-plt.legend(loc="lower right")
-plt.savefig(path_experiment+"ROC.png")
+    train_imgs = train_imgs[:,:,9:574,:]  #cut bottom and top so now it is 565*565
+    train_masks = train_masks[:,:,9:574,:]  #cut bottom and top so now it is 565*565
+    data_consistency_check(train_imgs,train_masks)
 
-#Precision-recall curve
-precision, recall, thresholds = precision_recall_curve(y_true, y_scores)
-precision = np.fliplr([precision])[0]
-recall = np.fliplr([recall])[0]
-AUC_prec_rec = np.trapz(precision,recall)
-print ("\nArea under Precision-Recall curve: " +str(AUC_prec_rec))
-prec_rec_curve = plt.figure()
-plt.plot(recall,precision,'-',label='Area Under the Curve (AUC = %0.4f)' % AUC_prec_rec)
-plt.title('Precision - Recall curve')
-plt.xlabel("Recall")
-plt.ylabel("Precision")
-plt.legend(loc="lower right")
-plt.savefig(path_experiment+"Precision_recall.png")
+    #check masks are within 0-1
+    assert(np.min(train_masks)==0 and np.max(train_masks)==1)
 
-# =================================================================
-# ## TAMBAHAN: Loop Optimasi Threshold untuk F1-Score
-# =================================================================
-print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
-best_f1 = 0
-best_threshold = 0.5 # Mulai dengan default
-for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
-    y_pred_test = (y_scores >= threshold).astype(int)
-    current_f1 = f1_score(y_true, y_pred_test)
-    print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
-    
-    if current_f1 > best_f1:
-        best_f1 = current_f1
-        best_threshold = threshold
+    print ("\ntrain images/masks shape:")
+    print (train_imgs.shape)
+    print ("train images range (min-max): " +str(np.min(train_imgs)) +' - '+str(np.max(train_imgs)))
+    print ("train masks are within 0-1\n")
 
-print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
-print("---> F1-Score Terbaik: " + str(best_f1))
-print("=======================================================\n")
-# =================================================================
+    #extract the TRAINING patches from the full images
+    patches_imgs_train, patches_masks_train = extract_random(train_imgs,train_masks,patch_height,patch_width,N_subimgs,inside_FOV)
+    data_consistency_check(patches_imgs_train, patches_masks_train)
 
-#Confusion matrix
-threshold_confusion = best_threshold # Gunakan threshold terbaik yang ditemukan
-print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
-y_pred = np.empty((y_scores.shape[0]))
-for i in range(y_scores.shape[0]):
-    if y_scores[i]>=threshold_confusion:
-        y_pred[i]=1
+    print ("\ntrain PATCHES images/masks shape:")
+    print (patches_imgs_train.shape)
+    print ("train PATCHES images range (min-max): " +str(np.min(patches_imgs_train)) +' - '+str(np.max(patches_imgs_train)))
+
+    return patches_imgs_train, patches_masks_train#, patches_imgs_test, patches_masks_test
+
+
+#Load the original data and return the extracted patches for training/testing
+def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_test, patch_height, patch_width):
+    ### test
+    test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
+    test_masks = load_hdf5(DRIVE_test_groudTruth)
+
+    test_imgs = my_PreProc(test_imgs_original)
+    test_masks = test_masks/255.
+
+    #extend both images and masks so they can be divided exactly by the patches dimensions
+    test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
+    test_masks = test_masks[0:Imgs_to_test,:,:,:]
+    test_imgs = paint_border(test_imgs,patch_height,patch_width)
+    test_masks = paint_border(test_masks,patch_height,patch_width)
+
+    data_consistency_check(test_imgs, test_masks)
+
+    #check masks are within 0-1
+    assert(np.max(test_masks)==1  and np.min(test_masks)==0)
+
+    print ("\ntest images/masks shape:")
+    print (test_imgs.shape)
+    print ("test images range (min-max): " +str(np.min(test_imgs)) +' - '+str(np.max(test_imgs)))
+    print ("test masks are within 0-1\n")
+
+    #extract the TEST patches from the full images
+    patches_imgs_test = extract_ordered(test_imgs,patch_height,patch_width)
+    patches_masks_test = extract_ordered(test_masks,patch_height,patch_width)
+    data_consistency_check(patches_imgs_test, patches_masks_test)
+
+    print ("\ntest PATCHES images/masks shape:")
+    print (patches_imgs_test.shape)
+    print ("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
+
+    return patches_imgs_test, patches_masks_test
+
+
+
+
+# Load the original data and return the extracted patches for testing
+# return the ground truth in its original shape
+def get_data_testing_overlap(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_test, patch_height, patch_width, stride_height, stride_width):
+    ### test
+    # =================================================================
+    # ==== PERBAIKAN DI SINI ====
+    # MODIFIKASI: Cek apakah input adalah string (path file) atau array
+    if isinstance(DRIVE_test_imgs_original, str):
+        # Jika string, maka load dari file
+        test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
     else:
-        y_pred[i]=0
-confusion = confusion_matrix(y_true, y_pred)
-print (confusion)
-accuracy = 0
-if float(np.sum(confusion))!=0:
-    accuracy = float(confusion[0,0]+confusion[1,1])/float(np.sum(confusion))
-print ("Global Accuracy: " +str(accuracy))
-specificity = 0
-if float(confusion[0,0]+confusion[0,1])!=0:
-    specificity = float(confusion[0,0])/float(confusion[0,0]+confusion[0,1])
-print ("Specificity: " +str(specificity))
-sensitivity = 0
-if float(confusion[1,1]+confusion[1,0])!=0:
-    sensitivity = float(confusion[1,1])/float(confusion[1,1]+confusion[1,0])
-print ("Sensitivity: " +str(sensitivity))
-precision = 0
-if float(confusion[1,1]+confusion[0,1])!=0:
-    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[1,0])
-print ("Precision: " +str(precision))
+        # Jika sudah array, langsung gunakan
+        test_imgs_original = DRIVE_test_imgs_original
 
-#Jaccard similarity index
-jaccard_index = jaccard_score(y_true, y_pred)
-print ("\nJaccard similarity score: " +str(jaccard_index))
+    if isinstance(DRIVE_test_groudTruth, str):
+        # Jika string, maka load dari file
+        test_masks = load_hdf5(DRIVE_test_groudTruth)
+    else:
+        # Jika sudah array, langsung gunakan
+        test_masks = DRIVE_test_groudTruth
+    # =================================================================
 
-#F1 score
-F1_score = f1_score(y_true, y_pred, labels=None, average='binary', sample_weight=None)
-print ("\nF1 score (F-measure): " +str(F1_score)) # F1-Score ini akan menjadi F1-Score terbaik
+    test_imgs = my_PreProc(test_imgs_original)
+    test_masks = test_masks/255.
+    #extend both images and masks so they can be divided exactly by the patches dimensions
+    test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
+    test_masks = test_masks[0:Imgs_to_test,:,:,:]
+    test_imgs = paint_border_overlap(test_imgs, patch_height, patch_width, stride_height, stride_width)
 
-#Save the results
-file_perf = open(path_experiment+'performances.txt', 'w')
-file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
-                  + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
-                  + "\nJaccard similarity score: " +str(jaccard_index)
-                  + "\nF1 score (F-measure): " +str(F1_score)
-                  + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
-                  +"\n\nConfusion matrix:"
-                  +str(confusion)
-                  +"\nACCURACY: " +str(accuracy)
-                  +"\nSENSITIVITY: " +str(sensitivity)
-                  +"\nSPECIFICITY: " +str(specificity)
-                  +"\nPRECISION: " +str(precision)
-                  )
-file_perf.close()
+    #check masks are within 0-1
+    assert(np.max(test_masks)==1  and np.min(test_masks)==0)
+
+    print ("\ntest images shape:")
+    print (test_imgs.shape)
+    print ("\ntest mask shape:")
+    print (test_masks.shape)
+    print ("test images range (min-max): " +str(np.min(test_imgs)) +' - '+str(np.max(test_imgs)))
+    print ("test masks are within 0-1\n")
+
+    #extract the TEST patches from the full images
+    patches_imgs_test = extract_ordered_overlap(test_imgs,patch_height,patch_width,stride_height,stride_width)
+
+    print ("\ntest PATCHES images shape:")
+    print (patches_imgs_test.shape)
+    print ("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
+
+    return patches_imgs_test, test_imgs.shape[2], test_imgs.shape[3], test_masks
+
+
+#data consinstency check
+def data_consistency_check(imgs,masks):
+    assert(len(imgs.shape)==len(masks.shape))
+    assert(imgs.shape[0]==masks.shape[0])
+    assert(imgs.shape[2]==masks.shape[2])
+    assert(imgs.shape[3]==masks.shape[3])
+    assert(masks.shape[1]==1)
+    assert(imgs.shape[1]==1 or imgs.shape[1]==3)
+
+
+#extract patches randomly in the full training images
+#  -- Inside OR in full image
+def extract_random(full_imgs,full_masks, patch_h,patch_w, N_patches, inside=True):
+    if (N_patches%full_imgs.shape[0] != 0):
+        print ("N_patches: plase enter a multiple of 20")
+        exit()
+    assert (len(full_imgs.shape)==4 and len(full_masks.shape)==4)  #4D arrays
+    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
+    assert (full_masks.shape[1]==1)   #masks only black and white
+    assert (full_imgs.shape[2] == full_masks.shape[2] and full_imgs.shape[3] == full_masks.shape[3])
+    patches = np.empty((N_patches,full_imgs.shape[1],patch_h,patch_w))
+    patches_masks = np.empty((N_patches,full_masks.shape[1],patch_h,patch_w))
+    img_h = full_imgs.shape[2]  #height of the full image
+    img_w = full_imgs.shape[3] #width of the full image
+    # (0,0) in the center of the image
+    patch_per_img = int(N_patches/full_imgs.shape[0])  #N_patches equally divided in the full images
+    print ("patches per full image: " +str(patch_per_img))
+    iter_tot = 0   #iter over the total numbe rof patches (N_patches)
+    for i in range(full_imgs.shape[0]):  #loop over the full images
+        k=0
+        while k <patch_per_img:
+            x_center = random.randint(0+int(patch_w/2),img_w-int(patch_w/2))
+            # print "x_center " +str(x_center)
+            y_center = random.randint(0+int(patch_h/2),img_h-int(patch_h/2))
+            # print "y_center " +str(y_center)
+            #check whether the patch is fully contained in the FOV
+            if inside==True:
+                if is_patch_inside_FOV(x_center,y_center,img_w,img_h,patch_h)==False:
+                    continue
+            patch = full_imgs[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
+            patch_mask = full_masks[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
+            patches[iter_tot]=patch
+            patches_masks[iter_tot]=patch_mask
+            iter_tot +=1   #total
+            k+=1  #per full_img
+    return patches, patches_masks
+
+
+#check if the patch is fully contained in the FOV
+def is_patch_inside_FOV(x,y,img_w,img_h,patch_h):
+    x_ = x - int(img_w/2) # origin (0,0) shifted to image center
+    y_ = y - int(img_h/2)  # origin (0,0) shifted to image center
+    R_inside = 270 - int(patch_h * np.sqrt(2.0) / 2.0) #radius is 270 (from DRIVE db docs), minus the patch diagonal (assumed it is a square #this is the limit to contain the full patch in the FOV
+    radius = np.sqrt((x_*x_)+(y_*y_))
+    if radius < R_inside:
+        return True
+    else:
+        return False
+
+
+#Divide all the full_imgs in pacthes
+def extract_ordered(full_imgs, patch_h, patch_w):
+    assert (len(full_imgs.shape)==4)  #4D arrays
+    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
+    img_h = full_imgs.shape[2]  #height of the full image
+    img_w = full_imgs.shape[3] #width of the full image
+    N_patches_h = int(img_h/patch_h) #round to lowest int
+    if (img_h%patch_h != 0):
+        print ("warning: " +str(N_patches_h) +" patches in height, with about " +str(img_h%patch_h) +" pixels left over")
+    N_patches_w = int(img_w/patch_w) #round to lowest int
+    if (img_h%patch_h != 0):
+        print ("warning: " +str(N_patches_w) +" patches in width, with about " +str(img_w%patch_w) +" pixels left over")
+    print ("number of patches per image: " +str(N_patches_h*N_patches_w))
+    N_patches_tot = (N_patches_h*N_patches_w)*full_imgs.shape[0]
+    patches = np.empty((N_patches_tot,full_imgs.shape[1],patch_h,patch_w))
+
+    iter_tot = 0   #iter over the total number of patches (N_patches)
+    for i in range(full_imgs.shape[0]):  #loop over the full images
+        for h in range(N_patches_h):
+            for w in range(N_patches_w):
+                patch = full_imgs[i,:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]
+                patches[iter_tot]=patch
+                iter_tot +=1   #total
+    assert (iter_tot==N_patches_tot)
+    return patches  #array with all the full_imgs divided in patches
+
+
+def paint_border_overlap(full_imgs, patch_h, patch_w, stride_h, stride_w):
+    assert (len(full_imgs.shape)==4)  #4D arrays
+    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
+    img_h = full_imgs.shape[2]  #height of the full image
+    img_w = full_imgs.shape[3] #width of the full image
+    leftover_h = (img_h-patch_h)%stride_h  #leftover on the h dim
+    leftover_w = (img_w-patch_w)%stride_w  #leftover on the w dim
+    if (leftover_h != 0):  #change dimension of img_h
+        print ("\nthe side H is not compatible with the selected stride of " +str(stride_h))
+        print ("img_h " +str(img_h) + ", patch_h " +str(patch_h) + ", stride_h " +str(stride_h))
+        print ("(img_h - patch_h) MOD stride_h: " +str(leftover_h))
+        print ("So the H dim will be padded with additional " +str(stride_h - leftover_h) + " pixels")
+        tmp_full_imgs = np.zeros((full_imgs.shape[0],full_imgs.shape[1],img_h+(stride_h-leftover_h),img_w))
+        tmp_full_imgs[0:full_imgs.shape[0],0:full_imgs.shape[1],0:img_h,0:img_w] = full_imgs
+        full_imgs = tmp_full_imgs
+    if (leftover_w != 0):   #change dimension of img_w
+        print ("the side W is not compatible with the selected stride of " +str(stride_w))
+        print ("img_w " +str(img_w) + ", patch_w " +str(patch_w) + ", stride_w " +str(stride_w))
+        print ("(img_w - patch_w) MOD stride_w: " +str(leftover_w))
+        print ("So the W dim will be padded with additional " +str(stride_w - leftover_w) + " pixels")
+        tmp_full_imgs = np.zeros((full_imgs.shape[0],full_imgs.shape[1],full_imgs.shape[2],img_w+(stride_w - leftover_w)))
+        tmp_full_imgs[0:full_imgs.shape[0],0:full_imgs.shape[1],0:full_imgs.shape[2],0:img_w] = full_imgs
+        full_imgs = tmp_full_imgs
+    print ("new full images shape: \n" +str(full_imgs.shape))
+    return full_imgs
+
+#Divide all the full_imgs in pacthes
+def extract_ordered_overlap(full_imgs, patch_h, patch_w,stride_h,stride_w):
+    assert (len(full_imgs.shape)==4)  #4D arrays
+    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
+    img_h = full_imgs.shape[2]  #height of the full image
+    img_w = full_imgs.shape[3] #width of the full image
+    assert ((img_h-patch_h)%stride_h==0 and (img_w-patch_w)%stride_w==0)
+    N_patches_img = ((img_h-patch_h)//stride_h+1)*((img_w-patch_w)//stride_w+1)  #// --> division between integers
+    N_patches_tot = N_patches_img*full_imgs.shape[0]
+    print ("Number of patches on h : " +str(((img_h-patch_h)//stride_h+1)))
+    print ("Number of patches on w : " +str(((img_w-patch_w)//stride_w+1)))
+    print ("number of patches per image: " +str(N_patches_img) +", totally for this dataset: " +str(N_patches_tot))
+    patches = np.empty((N_patches_tot,full_imgs.shape[1],patch_h,patch_w))
+    iter_tot = 0   #iter over the total number of patches (N_patches)
+    for i in range(full_imgs.shape[0]):  #loop over the full images
+        for h in range((img_h-patch_h)//stride_h+1):
+            for w in range((img_w-patch_w)//stride_w+1):
+                patch = full_imgs[i,:,h*stride_h:(h*stride_h)+patch_h,w*stride_w:(w*stride_w)+patch_w]
+                patches[iter_tot]=patch
+                iter_tot +=1   #total
+    assert (iter_tot==N_patches_tot)
+    return patches  #array with all the full_imgs divided in patches
+
+
+def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
+    assert (len(preds.shape)==4)  #4D arrays
+    # MODIFIKASI: Disesuaikan untuk channels_last
+    patch_h = preds.shape[1]
+    patch_w = preds.shape[2]
+    assert (preds.shape[3]==1 or preds.shape[3]==2) # check the channel is 1 or 2
+    
+    N_patches_h = (img_h-patch_h)//stride_h+1
+    N_patches_w = (img_w-patch_w)//stride_w+1
+    N_patches_img = N_patches_h * N_patches_w
+    print ("N_patches_h: " +str(N_patches_h))
+    print ("N_patches_w: " +str(N_patches_w))
+    print ("N_patches_img: " +str(N_patches_img))
+    assert (preds.shape[0]%N_patches_img==0)
+    N_full_imgs = preds.shape[0]//N_patches_img
+    print ("According to the dimension inserted, there are " +str(N_full_imgs) +" full images (of " +str(img_h)+"x" +str(img_w) +" each)")
+    # MODIFIKASI: Disesuaikan untuk channels_last
+    full_prob = np.zeros((N_full_imgs,img_h,img_w,preds.shape[3]))
+    full_sum = np.zeros((N_full_imgs,img_h,img_w,preds.shape[3]))
+
+    k = 0 #iterator over all the patches
+    for i in range(N_full_imgs):
+        for h in range((img_h-patch_h)//stride_h+1):
+            for w in range((img_w-patch_w)//stride_w+1):
+                # MODIFIKASI: Disesuaikan untuk channels_last
+                full_prob[i,h*stride_h:(h*stride_h)+patch_h,w*stride_w:(w*stride_w)+patch_w,:]+=preds[k]
+                full_sum[i,h*stride_h:(h*stride_h)+patch_h,w*stride_w:(w*stride_w)+patch_w,:]+=1
+                k+=1
+    assert(k==preds.shape[0])
+    assert(np.min(full_sum)>=1.0)  #at least one
+    final_avg = full_prob/full_sum
+    print (final_avg.shape)
+    assert(np.max(final_avg)<=1.0) #max value for a pixel is 1.0
+    assert(np.min(final_avg)>=0.0) #min value for a pixel is 0.0
+    return final_avg
+
+
+#Recompone the full images with the patches
+def recompone(data,N_h,N_w):
+    assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
+    assert(len(data.shape)==4)
+    N_pacth_per_img = N_w*N_h
+    assert(data.shape[0]%N_pacth_per_img == 0)
+    N_full_imgs = data.shape[0]/N_pacth_per_img
+    patch_h = data.shape[2]
+    patch_w = data.shape[3]
+    N_pacth_per_img = N_w*N_h
+    #define and start full recompone
+    full_recomp = np.empty((N_full_imgs,data.shape[1],N_h*patch_h,N_w*patch_w))
+    k = 0  #iter full img
+    s = 0  #iter single patch
+    while (s<data.shape[0]):
+        #recompone one:
+        single_recon = np.empty((data.shape[1],N_h*patch_h,N_w*patch_w))
+        for h in range(N_h):
+            for w in range(N_w):
+                single_recon[:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]=data[s]
+                s+=1
+        full_recomp[k]=single_recon
+        k+=1
+    assert (k==N_full_imgs)
+    return full_recomp
+
+
+#Extend the full images because patch divison is not exact
+def paint_border(data,patch_h,patch_w):
+    assert (len(data.shape)==4)  #4D arrays
+    assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
+    img_h=data.shape[2]
+    img_w=data.shape[3]
+    new_img_h = 0
+    new_img_w = 0
+    if (img_h%patch_h)==0:
+        new_img_h = img_h
+    else:
+        new_img_h = ((int(img_h)/int(patch_h))+1)*patch_h
+    if (img_w%patch_w)==0:
+        new_img_w = img_w
+    else:
+        new_img_w = ((int(img_w)/int(patch_w))+1)*patch_w
+    new_data = np.zeros((data.shape[0],data.shape[1],new_img_h,new_img_w))
+    new_data[:,:,0:img_h,0:img_w] = data[:,:,:,:]
+    return new_data
+
+
+#return only the pixels contained in the FOV, for both images and masks
+def pred_only_FOV(data_imgs,data_masks,original_imgs_border_masks):
+    assert (len(data_imgs.shape)==4 and len(data_masks.shape)==4)  #4D arrays
+    assert (data_imgs.shape[0]==data_masks.shape[0])
+    assert (data_imgs.shape[2]==data_masks.shape[2])
+    assert (data_imgs.shape[3]==data_masks.shape[3])
+    assert (data_imgs.shape[1]==1 and data_masks.shape[1]==1)  #check the channel is 1
+    height = data_imgs.shape[2]
+    width = data_imgs.shape[3]
+    new_pred_imgs = []
+    new_pred_masks = []
+    for i in range(data_imgs.shape[0]):  #loop over the full images
+        for x in range(width):
+            for y in range(height):
+                if inside_FOV_DRIVE(i,x,y,original_imgs_border_masks)==True:
+                    new_pred_imgs.append(data_imgs[i,:,y,x])
+                    new_pred_masks.append(data_masks[i,:,y,x])
+    new_pred_imgs = np.asarray(new_pred_imgs)
+    new_pred_masks = np.asarray(new_pred_masks)
+    return new_pred_imgs, new_pred_masks
+
+#function to set to black everything outside the FOV, in a full image
+def kill_border(data, original_imgs_border_masks):
+    assert (len(data.shape)==4)  #4D arrays
+    assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
+    height = data.shape[2]
+    width = data.shape[3]
+    for i in range(data.shape[0]):  #loop over the full images
+        for x in range(width):
+            for y in range(height):
+                if inside_FOV_DRIVE(i,x,y,original_imgs_border_masks)==False:
+                    data[i,:,y,x]=0.0
+
+
+def inside_FOV_DRIVE(i, x, y, DRIVE_masks):
+    assert (len(DRIVE_masks.shape)==4)  #4D arrays
+    assert (DRIVE_masks.shape[1]==1)  #DRIVE masks is black and white
+    # DRIVE_masks = DRIVE_masks/255.  #NOOO!! otherwise with float numbers takes forever!!
+
+    if (x >= DRIVE_masks.shape[3] or y >= DRIVE_masks.shape[2]): #my image bigger than the original
+        return False
+
+    if (DRIVE_masks[i,0,y,x]>0):  #0==black pixels
+        # print DRIVE_masks[i,0,y,x]  #verify it is working right
+        return True
+    else:
+        return False
