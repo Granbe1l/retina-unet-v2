@@ -167,7 +167,9 @@ json_string = model.to_json()
 open('./'+name_experiment+'/'+name_experiment +'_architecture.json', 'w').write(json_string)
 
 #============ Training ================================== (TIDAK ADA PERUBAHAN)
-checkpointer = ModelCheckpoint(filepath='./'+name_experiment+'/'+name_experiment +'_best.weights.h5', verbose=1, monitor='val_loss', mode='auto', save_best_only=True)
+#checkpointer = ModelCheckpoint(filepath='./'+name_experiment+'/'+name_experiment +'_best.weights.h5', verbose=1, monitor='val_loss', mode='auto', save_best_only=True)
+# SESUDAH (PERBAIKAN KUNCI)
+checkpointer = ModelCheckpoint(filepath='./'+name_experiment+'/'+name_experiment +'_best_weights.h5', verbose=1, monitor='loss', mode='auto', save_best_only=True)
 
 patches_masks_train = masks_Unet(patches_masks_train)
 
