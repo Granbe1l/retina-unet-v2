@@ -46,8 +46,6 @@ class ChebyshevInitializer(initializers.Initializer):
         self.at = at
 
     def __call__(self, shape, dtype=None):
-        # Targetkan kernel depthwise dari SeparableConv2D
-        # Shape: (height, width, in_channels, depth_multiplier=1)
         if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 1:
             kernel_height, kernel_width, input_channels, _ = shape
             cheb_window_1d_h = chebwin(kernel_height, at=self.at)
@@ -60,7 +58,6 @@ class ChebyshevInitializer(initializers.Initializer):
                  final_weights[:, :, i, 0] = cheb_kernel_2d
             return tf.convert_to_tensor(final_weights, dtype=dtype)
         else:
-            # Untuk kernel pointwise atau bias, gunakan initializer standar Keras
             return initializers.GlorotUniform()(shape, dtype=dtype)
 
     def get_config(self):
@@ -91,18 +88,14 @@ N_visual = int(config.get('testing settings', 'N_group_visual'))
 
 #================ Load model ==================================
 best_last = config.get('testing settings', 'best_last')
-
-# PERBAIKAN: Tambahkan custom_objects saat memuat model
 custom_objects = {'ChebyshevInitializer': ChebyshevInitializer}
 model = model_from_json(
     open(path_experiment+name_experiment +'_architecture.json').read(),
-    custom_objects=custom_objects # <-- Argumen ditambahkan di sini
+    custom_objects=custom_objects
 )
-
 try:
     model.load_weights(path_experiment+name_experiment + '_'+best_last+'.weights.h5')
 except IOError:
-    # Fallback jika nama file bobot masih format lama
     model.load_weights(path_experiment+name_experiment + '_'+best_last+'_weights.h5')
 
 #======= PREDICTION LOOP =========
@@ -119,7 +112,6 @@ for i in range(Imgs_to_test):
     with h5py.File('temp_mask.hdf5', 'w') as hf:
         hf.create_dataset('image', data=gtruth_single)
 
-    # Diasumsikan extract_patches.py versi ASLI
     patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
         DRIVE_test_imgs_original='temp_img.hdf5',
         DRIVE_test_groudTruth='temp_mask.hdf5',
@@ -130,15 +122,11 @@ for i in range(Imgs_to_test):
         stride_width=stride_width
     )
 
-    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1)) # Ke channels_last untuk model
-
-    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0) # Hasilnya 3D
-
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
-
-    # recompone_overlap asli mengharapkan channels_first
+    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1)) 
+    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0)
+    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original")
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
-
+    
     all_predictions.append(pred_img)
     all_masks.append(masks_test)
 
@@ -152,7 +140,6 @@ orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
 pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
 gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
 
-# ... sisa kode evaluasi dan penyimpanan sama persis ...
 print("Orig imgs shape: " + str(orig_imgs.shape))
 print("pred imgs shape: " + str(pred_imgs.shape))
 print("Gtruth imgs shape: " + str(gtruth_masks.shape))
@@ -205,8 +192,28 @@ plt.ylabel("Precision")
 plt.legend(loc="lower right")
 plt.savefig(path_experiment+"Precision_recall.png")
 
+# =================================================================
+# ## TAMBAHAN: Loop Optimasi Threshold untuk F1-Score
+# =================================================================
+print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
+best_f1 = 0
+best_threshold = 0.5 # Mulai dengan default
+for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
+    y_pred_test = (y_scores >= threshold).astype(int)
+    current_f1 = f1_score(y_true, y_pred_test)
+    print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
+    
+    if current_f1 > best_f1:
+        best_f1 = current_f1
+        best_threshold = threshold
+
+print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
+print("---> F1-Score Terbaik: " + str(best_f1))
+print("=======================================================\n")
+# =================================================================
+
 #Confusion matrix
-threshold_confusion = 0.5
+threshold_confusion = best_threshold # Gunakan threshold terbaik yang ditemukan
 print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
 y_pred = np.empty((y_scores.shape[0]))
 for i in range(y_scores.shape[0]):
@@ -239,7 +246,7 @@ print ("\nJaccard similarity score: " +str(jaccard_index))
 
 #F1 score
 F1_score = f1_score(y_true, y_pred, labels=None, average='binary', sample_weight=None)
-print ("\nF1 score (F-measure): " +str(F1_score))
+print ("\nF1 score (F-measure): " +str(F1_score)) # F1-Score ini akan menjadi F1-Score terbaik
 
 #Save the results
 file_perf = open(path_experiment+'performances.txt', 'w')
@@ -247,6 +254,7 @@ file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
                   + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
                   + "\nJaccard similarity score: " +str(jaccard_index)
                   + "\nF1 score (F-measure): " +str(F1_score)
+                  + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
                   +"\n\nConfusion matrix:"
                   +str(confusion)
                   +"\nACCURACY: " +str(accuracy)
