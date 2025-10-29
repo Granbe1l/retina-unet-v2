@@ -255,7 +255,7 @@ if float(confusion[1,1]+confusion[1,0])!=0:
 print ("Sensitivity: " +str(sensitivity))
 precision = 0
 if float(confusion[1,1]+confusion[0,1])!=0:
-    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[1,0])
+    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[0,1])
 print ("Precision: " +str(precision))
 
 #Jaccard similarity index
