@@ -136,6 +136,10 @@ for i in range(Imgs_to_test):
 
     pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
 
+    # ===================================================================
+    # BARIS transpose YANG SALAH SUDAH DIHAPUS DARI SINI
+    # ===================================================================
+
     # recompone_overlap asli mengharapkan channels_first
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
 
