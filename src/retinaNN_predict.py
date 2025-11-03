@@ -112,7 +112,7 @@ for i in range(Imgs_to_test):
     print("Predicting image " + str(i+1) + "/" + str(Imgs_to_test))
 
     test_img_original_single = test_imgs_orig[i:i+1, ...]
-    gtruth_single = gtruth_masks_all[i:i..._masks_all[i:i+1, ...]
+    gtruth_single = gtruth_masks_all[i:i+1, ...]
 
     with h5py.File('temp_img.hdf5', 'w') as hf:
         hf.create_dataset('image', data=test_img_original_single)
