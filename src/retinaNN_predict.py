@@ -278,7 +278,7 @@ file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
                   + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
                   + "\nJaccard similarity score: " +str(jaccard_index)
                   + "\nF1 score (F-measure): " +str(F1_score)
-                  + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
+                #   + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
                   +"\n\nConfusion matrix:"
                   +str(confusion)
                   +"\nACCURACY: " +str(accuracy)
