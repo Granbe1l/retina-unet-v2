@@ -119,7 +119,7 @@ for i in range(Imgs_to_test):
     with h5py.File('temp_mask.hdf5', 'w') as hf:
         hf.create_dataset('image', data=gtruth_single)
 
-    # Diasumsikan extract_patches.py versi ASLI (menghasilkan channels-first)
+    # Diasumsikan extract_patches.py versi ASLI
     patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
         DRIVE_test_imgs_original='temp_img.hdf5',
         DRIVE_test_groudTruth='temp_mask.hdf5',
@@ -134,16 +134,13 @@ for i in range(Imgs_to_test):
 
     prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0) # Hasilnya 3D
 
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first (N, C, H, W)
-    
+    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
+
     # ===================================================================
-    # PERBAIKAN: Tambahkan kembali transpose ini
-    # Ini mengubah (N, C, H, W) -> (N, H, W, C) agar cocok dengan
-    # recompone_overlap Anda yang sudah dimodifikasi
-    pred_patches = np.transpose(pred_patches, (0, 2, 3, 1)) 
+    # BARIS transpose YANG MENYEBABKAN ERROR SUDAH DIHAPUS
     # ===================================================================
 
-    # panggil recompone_overlap yang sudah dimodifikasi (mengharapkan channels-last)
+    # recompone_overlap asli mengharapkan channels_first
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
 
     all_predictions.append(pred_img)
@@ -153,8 +150,7 @@ pred_imgs = np.concatenate(all_predictions, axis=0)
 gtruth_masks = np.concatenate(all_masks, axis=0)
 
 #========== Proses selanjutnya ... ====================
-# Kembalikan ke format channels_first untuk fungsi-fungsi evaluasi asli
-pred_imgs = np.transpose(pred_imgs, (0, 3, 1, 2))
+# pred_imgs sudah dalam format channels_first, jadi tidak perlu transpose
 orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])
 kill_border(pred_imgs, test_border_masks)
 orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
@@ -215,27 +211,15 @@ plt.legend(loc="lower right")
 plt.savefig(path_experiment+"Precision_recall.png")
 
 # =================================================================
-# ## TAMBAHAN: Loop Optimasi Threshold untuk F1-Score
+# ## DIHAPUS: Loop Optimasi Threshold untuk F1-Score
 # =================================================================
 # print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
-# best_f1 = 0
-# best_threshold = 0.5 # Mulai dengan default
-# for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
-#     y_pred_test = (y_scores >= threshold).astype(int)
-#     current_f1 = f1_score(y_true, y_pred_test)
-#     print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
-    
-#     if current_f1 > best_f1:
-#         best_f1 = current_f1
-#         best_threshold = threshold
-
-# print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
-# print("---> F1-Score Terbaik: " + str(best_f1))
+# ... (kode loop optimasi threshold dihapus) ...
 # print("=======================================================\n")
 # =================================================================
 
 #Confusion matrix
-threshold_confusion = best_threshold # Gunakan threshold terbaik yang ditemukan
+threshold_confusion = 0.5 # DIKEMBALIKAN ke nilai standar 0.5
 print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
 y_pred = np.empty((y_scores.shape[0]))
 for i in range(y_scores.shape[0]):
@@ -276,7 +260,7 @@ file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
                   + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
                   + "\nJaccard similarity score: " +str(jaccard_index)
                   + "\nF1 score (F-measure): " +str(F1_score)
-                  + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
+                  # + "\nOptimal Threshold: " +str(best_threshold) # Info threshold dihapus
                   +"\n\nConfusion matrix:"
                   +str(confusion)
                   +"\nACCURACY: " +str(accuracy)
