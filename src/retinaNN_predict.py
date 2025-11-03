@@ -48,7 +48,7 @@ class ChebyshevInitializer(initializers.Initializer):
     def __call__(self, shape, dtype=None):
         # Targetkan kernel depthwise dari SeparableConv2D
         # Shape: (height, width, in_channels, depth_multiplier=1)
-        if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 1:
+        if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 48:
             kernel_height, kernel_width, input_channels, _ = shape
             cheb_window_1d_h = chebwin(kernel_height, at=self.at)
             cheb_window_1d_w = chebwin(kernel_width, at=self.at)

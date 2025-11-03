@@ -179,3 +179,4 @@ model.fit(patches_imgs_train, patches_masks_train, epochs=N_epochs, batch_size=b
 
 #========== Save and test the last model =================== (TIDAK ADA PERUBAHAN)
 model.save_weights('./'+name_experiment+'/'+name_experiment +'_last.weights.h5', overwrite=True)
+
