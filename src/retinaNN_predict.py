@@ -109,7 +109,7 @@ except IOError:
 all_predictions = []
 all_masks = []
 for i in range(Imgs_to_test):
-    print("Predicting image " + str(i+1) + "/" + str(Imgs_to_test))
+    print("Predicting image " + str(i+1) + "/" + str(Img_to_test))
 
     test_img_original_single = test_imgs_orig[i:i+1, ...]
     gtruth_single = gtruth_masks_all[i:i+1, ...]
@@ -217,21 +217,21 @@ plt.savefig(path_experiment+"Precision_recall.png")
 # =================================================================
 # ## TAMBAHAN: Loop Optimasi Threshold untuk F1-Score
 # =================================================================
-# print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
-# best_f1 = 0
-# best_threshold = 0.5 # Mulai dengan default
-# for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
-#     y_pred_test = (y_scores >= threshold).astype(int)
-#     current_f1 = f1_score(y_true, y_pred_test)
-#     print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
+print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
+best_f1 = 0
+best_threshold = 0.5 # Mulai dengan default
+for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
+    y_pred_test = (y_scores >= threshold).astype(int)
+    current_f1 = f1_score(y_true, y_pred_test)
+    print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
     
-#     if current_f1 > best_f1:
-#         best_f1 = current_f1
-#         best_threshold = threshold
+    if current_f1 > best_f1:
+        best_f1 = current_f1
+        best_threshold = threshold
 
-# print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
-# print("---> F1-Score Terbaik: " + str(best_f1))
-# print("=======================================================\n")
+print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
+print("---> F1-Score Terbaik: " + str(best_f1))
+print("=======================================================\n")
 # =================================================================
 
 #Confusion matrix
