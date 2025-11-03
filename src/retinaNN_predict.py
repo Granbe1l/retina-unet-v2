@@ -214,31 +214,9 @@ plt.ylabel("Precision")
 plt.legend(loc="lower right")
 plt.savefig(path_experiment+"Precision_recall.png")
 
-# =================================================================
-# ## TAMBAHAN: Loop Optimasi Threshold untuk F1-Score
-# =================================================================
-# print("\n\n======== Mencari Threshold Optimal untuk F1-Score ========")
-# best_f1 = 0
-# best_threshold = 0.5 # Mulai dengan default
-# for threshold in np.arange(0.1, 0.9, 0.05): # Uji threshold dari 0.1 s/d 0.85
-#     y_pred_test = (y_scores >= threshold).astype(int)
-#     current_f1 = f1_score(y_true, y_pred_test)
-#     print(f"Threshold: {threshold:.2f} -> F1-Score: {current_f1:.4f}")
-    
-#     if current_f1 > best_f1:
-#         best_f1 = current_f1
-#         best_threshold = threshold
-
-# print("\n---> Threshold Optimal ditemukan di: " + str(best_threshold))
-# print("---> F1-Score Terbaik: " + str(best_f1))
-# print("=======================================================\n")
-# =================================================================
-
 #Confusion matrix
-threshold_confusion = 0.5 # DIKEMBALIKAN ke nilai standar 0.5
+threshold_confusion = 0.5
 print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
-# threshold_confusion = best_threshold # Gunakan threshold terbaik yang ditemukan
-# print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
 y_pred = np.empty((y_scores.shape[0]))
 for i in range(y_scores.shape[0]):
     if y_scores[i]>=threshold_confusion:
@@ -270,7 +248,7 @@ print ("\nJaccard similarity score: " +str(jaccard_index))
 
 #F1 score
 F1_score = f1_score(y_true, y_pred, labels=None, average='binary', sample_weight=None)
-print ("\nF1 score (F-measure): " +str(F1_score)) # F1-Score ini akan menjadi F1-Score terbaik
+print ("\nF1 score (F-measure): " +str(F1_score))
 
 #Save the results
 file_perf = open(path_experiment+'performances.txt', 'w')
@@ -278,7 +256,6 @@ file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
                   + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
                   + "\nJaccard similarity score: " +str(jaccard_index)
                   + "\nF1 score (F-measure): " +str(F1_score)
-                #   + "\nOptimal Threshold: " +str(best_threshold) # Tambahkan info threshold
                   +"\n\nConfusion matrix:"
                   +str(confusion)
                   +"\nACCURACY: " +str(accuracy)
