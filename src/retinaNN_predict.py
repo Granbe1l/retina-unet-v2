@@ -48,7 +48,7 @@ class ChebyshevInitializer(initializers.Initializer):
     def __call__(self, shape, dtype=None):
         # Targetkan kernel depthwise dari SeparableConv2D
         # Shape: (height, width, in_channels, depth_multiplier=1)
-        if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 48:
+        if len(shape) == 4 and shape[0] == self.kernel_size[0] and shape[1] == self.kernel_size[1] and shape[3] == 1:
             kernel_height, kernel_width, input_channels, _ = shape
             cheb_window_1d_h = chebwin(kernel_height, at=self.at)
             cheb_window_1d_w = chebwin(kernel_width, at=self.at)
@@ -119,7 +119,7 @@ for i in range(Imgs_to_test):
     with h5py.File('temp_mask.hdf5', 'w') as hf:
         hf.create_dataset('image', data=gtruth_single)
 
-    # Diasumsikan extract_patches.py versi ASLI
+    # Diasumsikan extract_patches.py versi ASLI (menghasilkan channels-first)
     patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
         DRIVE_test_imgs_original='temp_img.hdf5',
         DRIVE_test_groudTruth='temp_mask.hdf5',
@@ -134,13 +134,16 @@ for i in range(Imgs_to_test):
 
     prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0) # Hasilnya 3D
 
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first
-
+    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original") # Kembali ke 4D channels_first (N, C, H, W)
+    
     # ===================================================================
-    # BARIS transpose YANG MENYEBABKAN ERROR SUDAH DIHAPUS
+    # PERBAIKAN: Tambahkan kembali transpose ini
+    # Ini mengubah (N, C, H, W) -> (N, H, W, C) agar cocok dengan
+    # recompone_overlap Anda yang sudah dimodifikasi
+    pred_patches = np.transpose(pred_patches, (0, 2, 3, 1)) 
     # ===================================================================
 
-    # recompone_overlap asli mengharapkan channels_first
+    # panggil recompone_overlap yang sudah dimodifikasi (mengharapkan channels-last)
     pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
 
     all_predictions.append(pred_img)
@@ -150,7 +153,8 @@ pred_imgs = np.concatenate(all_predictions, axis=0)
 gtruth_masks = np.concatenate(all_masks, axis=0)
 
 #========== Proses selanjutnya ... ====================
-# pred_imgs sudah dalam format channels_first, jadi tidak perlu transpose
+# Kembalikan ke format channels_first untuk fungsi-fungsi evaluasi asli
+pred_imgs = np.transpose(pred_imgs, (0, 3, 1, 2))
 orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])
 kill_border(pred_imgs, test_border_masks)
 orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
@@ -278,6 +282,6 @@ file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
                   +"\nACCURACY: " +str(accuracy)
                   +"\nSENSITIVITY: " +str(sensitivity)
                   +"\nSPECIFICITY: " +str(specificity)
-                  +"\nPRECISION: " +str(precision)
+                  +"\nPRECISION: "E" +str(precision)
                   )
 file_perf.close()
