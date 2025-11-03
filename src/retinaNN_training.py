@@ -6,7 +6,7 @@
 #   - define the training
 #
 ##################################################
-
+import keras
 import numpy as np
 import configparser
 import random
