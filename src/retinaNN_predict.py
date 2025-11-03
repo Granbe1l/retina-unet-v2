@@ -109,7 +109,7 @@ except IOError:
 all_predictions = []
 all_masks = []
 for i in range(Imgs_to_test):
-    print("Predicting image " + str(i+1) + "/" + str(Img_to_test))
+    print("Predicting image " + str(i+1) + "/" + str(Imgs_to_test))
 
     test_img_original_single = test_imgs_orig[i:i+1, ...]
     gtruth_single = gtruth_masks_all[i:i+1, ...]
