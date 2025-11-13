@@ -5,8 +5,9 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Layer
-# Anda mungkin perlu impor ini untuk membuat kernel Chebyshev:
-# from scipy import signal 
+# --- MODIFIKASI SKRIPSI ---
+# Impor 'scipy.signal' untuk membuat window Chebyshev
+import scipy.signal
 
 # ===================================================================
 # === BAGIAN 1: FUNGSI UTILITAS ASLI (TELAH DIPERBAIKI) ===
@@ -55,7 +56,6 @@ def visualize(data,filename):
         img = Image.fromarray(data.astype(np.uint8))   #the image is already 0-255
     else:
         img = Image.fromarray((data*255).astype(np.uint8))  #the image is between 0-1
-    # --- PERBAIKAN INDENTASI ---
     img.save(filename + '.png')
     return img
 
@@ -65,16 +65,13 @@ def masks_Unet(masks):
     assert (len(masks.shape)==4)  #4D arrays
     assert (masks.shape[1]==1 )  #check the channel is 1
     
-    # --- PERBAIKAN UNTUK NameError ---
     im_h = masks.shape[2]
     im_w = masks.shape[3]
-    # -------------------------------
     
     masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
     new_masks = np.empty((masks.shape[0],im_h*im_w,2))
     for i in range(masks.shape[0]):
         for j in range(im_h*im_w):
-            # --- PERBAIKAN INDENTASI ---
             if  masks[i,j] == 0:
                 new_masks[i,j,0]=1
                 new_masks[i,j,1]=0
@@ -102,7 +99,6 @@ def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
     else:
         print ("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
         exit()
-    # --- PERBAIKAN INDENTASI ---
     pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
     return pred_images
 
@@ -110,98 +106,93 @@ def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
 # === BAGIAN 2: KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
 # ===================================================================
 
-# === 1. FUNGSI FOCAL LOSS (DENGAN PERBAIKAN LENGKAP) ===
+# === 1. FUNGSI FOCAL LOSS (FINAL) ===
 def focal_loss(gamma=2., alpha=.25):
     """
     Implementasi Keras untuk Focal Loss.
     """
     def focal_loss_fixed(y_true, y_pred):
         y_true = tf.cast(y_true, tf.float32)
-        
-        # Mengganti 'K.clip'
         y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1. - K.epsilon())
         
-        # --- PERBAIKAN UNTUK AttributeError ---
-        # Mengganti 'K.sum' yang usang dengan 'tf.reduce_sum'
         pt = tf.reduce_sum(y_true * y_pred, axis=-1)
-        
-        # Mengganti 'K.pow' yang usang dengan 'tf.pow'
         modulating_factor = tf.pow(1. - pt, gamma)
-        
-        # Menggunakan tf.keras.losses lebih eksplisit
         ce = tf.keras.losses.categorical_crossentropy(y_true, y_pred)
         
         alpha_t = y_true[..., 1] * alpha + y_true[..., 0] * (1. - alpha)
         loss = alpha_t * modulating_factor * ce
         
-        # Mengganti 'K.mean' yang usang dengan 'tf.reduce_mean'
         return tf.reduce_mean(loss)
     return focal_loss_fixed
 
 
-# === 2. KERANGKA LAYER DOLPH-CHEBYSHEV (DENGAN PERBAIKAN LENGKAP) ===
+# === 2. LAYER DOLPH-CHEBYSHEV (IMPLEMENTASI LOGIKA FINAL) ===
 class DolphChebyshevModulatedConv(Layer):
     """
-    Ini adalah Kerangka (Boilerplate) Keras Layer untuk Dolph-Chebyshev.
+    Ini adalah implementasi logis dari layer Dolph-Chebyshev
+    untuk skripsi Anda.
     
-    ==================================================================
-    TANTANGAN SKRIPSI UTAMA ANDA:
-    ==================================================================
-    Gantilah bagian '--- MULAI LOGIKA FILTER ANDA ---'
-    di dalam fungsi 'build' di bawah ini dengan kode NumPy/SciPy
-    untuk membangkitkan kernel filter Dolph-Chebyshev 2D Anda.
-    ==================================================================
+    Ini meniru metodologi Gabor dengan:
+    1. Membuat filter Dolph-Chebyshev 2D yang 'fixed' (tidak dilatih).
+    2. Membuat 'kernel' konvolusi yang 'learnable' (bisa dilatih).
+    3. Mengalikan keduanya (modulasi) untuk membuat kernel final.
     """
-    def __init__(self, filters, kernel_size=(3, 3), **kwargs):
-        # Menggunakan sintaks super() Python 3
+    def __init__(self, filters, kernel_size=(3, 3), sidelobe_attenuation=80, **kwargs):
         super().__init__(**kwargs)
         self.filters = filters
         self.kernel_size = kernel_size
-        # Anda bisa menambahkan argumen lain di sini, misalnya:
-        # self.sidelobe_attenuation = sidelobe_attenuation
+        self.sidelobe_attenuation = sidelobe_attenuation # 'at' untuk chebwin
 
     def build(self, input_shape):
         input_channels = input_shape[-1]
         if input_channels is None:
             raise ValueError("Dimensi channel input harus diketahui.")
 
-        # --------------------------------------------------
-        # --- MULAI TUGAS PENELITIAN ANDA (LOGIKA FILTER) ---
-        # --------------------------------------------------
+        # --- INI ADALAH LOGIKA FILTER SKRIPSI ANDA ---
+        # 1. Buat window Chebyshev 1D untuk tinggi dan lebar
+        # 'at' (attenuation) adalah parameter kunci untuk penelitian Anda
+        cheb_win_h = scipy.signal.chebwin(self.kernel_size[0], at=self.sidelobe_attenuation)
+        cheb_win_w = scipy.signal.chebwin(self.kernel_size[1], at=self.sidelobe_attenuation)
         
-        print("="*50)
-        print("PERINGATAN: Menggunakan kernel placeholder untuk DolphChebyshevModulatedConv.")
-        print("Anda harus mengganti logika ini di lib/help_functions.py")
-        print("="*50)
+        # 2. Buat kernel 2D dari window 1D (menggunakan outer product)
+        kernel_2d = np.outer(cheb_win_h, cheb_win_w)
         
-        # Placeholder: kernel acak (GANTI DENGAN KODE FILTER ANDA)
-        chebyshev_kernel_np = np.random.rand(
-            self.kernel_size[0], 
-            self.kernel_size[1], 
-            input_channels, 
-            self.filters
+        # 3. Normalisasi kernel (opsional, tapi praktik yang baik)
+        kernel_2d /= np.sum(kernel_2d)
+        
+        # 4. Bentuk ulang agar bisa di-broadcast (dikalikan)
+        # Shape menjadi: (h, w, 1, 1)
+        cheb_filter_shape = self.kernel_size + (1, 1)
+        self.chebyshev_filter = tf.constant(
+            np.reshape(kernel_2d, cheb_filter_shape), 
+            dtype=tf.float32
         )
         
-        # --------------------------------------------------
-        # --- AKHIR TUGAS PENELITIAN ANDA ---
-        # --------------------------------------------------
-
-        self.chebyshev_kernel = self.add_weight(
-            name='chebyshev_kernel',
-            shape=chebyshev_kernel_np.shape,
-            initializer=tf.keras.initializers.Constant(chebyshev_kernel_np),
-            trainable=False
+        # --- KERNEL YANG BISA DILATIH ---
+        # 5. Buat kernel 'learnable' (yang akan dimodulasi)
+        # Shape: (h, w, input_channels, output_filters)
+        kernel_shape = self.kernel_size + (input_channels, self.filters)
+        
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=kernel_shape,
+            initializer='glorot_uniform', # Inisialisasi standar Keras
+            trainable=True  # INI YANG PALING PENTING
         )
+        # --- SELESAI ---
         
         super(DolphChebyshevModulatedConv, self).build(input_shape) 
 
     def call(self, inputs):
-        # --- PERBAIKAN UNTUK AttributeError ---
-        # Mengganti 'K.conv2d' yang usang dengan 'tf.nn.conv2d' modern
+        # 6. Modulasi: kalikan kernel 'learnable' dengan filter 'fixed'
+        # [h,w,C_in,C_out] * [h,w,1,1] -> [h,w,C_in,C_out]
+        modulated_kernel = self.kernel * self.chebyshev_filter
+
+        # 7. Lakukan konvolusi dengan kernel yang sudah dimodulasi
         return tf.nn.conv2d(
             inputs,
-            self.chebyshev_kernel,
-            strides=[1, 1, 1, 1], # Format: [Batch, Height, Width, Channel]
+            modulated_kernel,
+            strides=[1, 1, 1, 1],
             padding='SAME'
         )
 
