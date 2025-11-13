@@ -144,10 +144,8 @@ class DolphChebyshevModulatedConv(Layer):
     ==================================================================
     """
     def __init__(self, filters, kernel_size=(3, 3), **kwargs):
-        # --- PERBAIKAN LINTER (Garis Merah) ---
         # Menggunakan sintaks super() Python 3
         super().__init__(**kwargs)
-        # --- PERBAIKAN INDENTASI ---
         self.filters = filters
         self.kernel_size = kernel_size
         # Anda bisa menambahkan argumen lain di sini, misalnya:
@@ -156,7 +154,6 @@ class DolphChebyshevModulatedConv(Layer):
     def build(self, input_shape):
         input_channels = input_shape[-1]
         if input_channels is None:
-            # --- PERBAIKAN INDENTASI ---
             raise ValueError("Dimensi channel input harus diketahui.")
 
         # --------------------------------------------------
@@ -180,7 +177,6 @@ class DolphChebyshevModulatedConv(Layer):
         # --- AKHIR TUGAS PENELITIAN ANDA ---
         # --------------------------------------------------
 
-        # --- PERBAIKAN INDENTASI ---
         self.chebyshev_kernel = self.add_weight(
             name='chebyshev_kernel',
             shape=chebyshev_kernel_np.shape,
@@ -188,17 +184,19 @@ class DolphChebyshevModulatedConv(Layer):
             trainable=False
         )
         
-        # Panggilan super() harus ada di akhir 'build'
         super(DolphChebyshevModulatedConv, self).build(input_shape) 
 
     def call(self, inputs):
-        # --- PERBAIKAN INDENTASI ---
-        return K.conv2d(
+        # --- PERBAIKAN UNTUK AttributeError ---
+        # Mengganti 'K.conv2d' yang usang dengan 'tf.nn.conv2d' modern
+        # 'padding' harus dalam huruf KAPITAL ('SAME')
+        # 'strides' diperlukan, [1, 1, 1, 1] berarti tidak ada lompatan
+        return tf.nn.conv2d(
             inputs,
             self.chebyshev_kernel,
-            padding='same'
+            strides=[1, 1, 1, 1], # Format: [Batch, Height, Width, Channel]
+            padding='SAME'
         )
 
     def compute_output_shape(self, input_shape):
-        # --- PERBAIKAN INDENTASI ---
         return (input_shape[0], input_shape[1], input_shape[2], self.filters)
