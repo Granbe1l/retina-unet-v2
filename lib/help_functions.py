@@ -110,14 +110,17 @@ def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
 # === BAGIAN 2: KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
 # ===================================================================
 
-# === 1. FUNGSI FOCAL LOSS ===
+# === 1. FUNGSI FOCAL LOSS (DENGAN PERBAIKAN) ===
 def focal_loss(gamma=2., alpha=.25):
     """
     Implementasi Keras untuk Focal Loss.
     """
     def focal_loss_fixed(y_true, y_pred):
         y_true = tf.cast(y_true, tf.float32)
-        y_pred = K.clip(y_pred, K.epsilon(), 1. - K.epsilon())
+        
+        # --- PERBAIKAN UNTUK AttributeError ---
+        # Mengganti 'K.clip' yang usang dengan 'tf.clip_by_value' modern
+        y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1. - K.epsilon())
         
         pt = K.sum(y_true * y_pred, axis=-1)
         modulating_factor = K.pow(1. - pt, gamma)
@@ -130,7 +133,7 @@ def focal_loss(gamma=2., alpha=.25):
     return focal_loss_fixed
 
 
-# === 2. KERANGKA LAYER DOLPH-CHEBYSHEV ===
+# === 2. KERANGKA LAYER DOLPH-CHEBYSHEV (DENGAN PERBAIKAN) ===
 class DolphChebyshevModulatedConv(Layer):
     """
     Ini adalah Kerangka (Boilerplate) Keras Layer untuk Dolph-Chebyshev.
@@ -189,8 +192,6 @@ class DolphChebyshevModulatedConv(Layer):
     def call(self, inputs):
         # --- PERBAIKAN UNTUK AttributeError ---
         # Mengganti 'K.conv2d' yang usang dengan 'tf.nn.conv2d' modern
-        # 'padding' harus dalam huruf KAPITAL ('SAME')
-        # 'strides' diperlukan, [1, 1, 1, 1] berarti tidak ada lompatan
         return tf.nn.conv2d(
             inputs,
             self.chebyshev_kernel,
