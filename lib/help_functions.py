@@ -110,7 +110,7 @@ def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
 # === BAGIAN 2: KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
 # ===================================================================
 
-# === 1. FUNGSI FOCAL LOSS (DENGAN PERBAIKAN) ===
+# === 1. FUNGSI FOCAL LOSS (DENGAN PERBAIKAN LENGKAP) ===
 def focal_loss(gamma=2., alpha=.25):
     """
     Implementasi Keras untuk Focal Loss.
@@ -118,22 +118,28 @@ def focal_loss(gamma=2., alpha=.25):
     def focal_loss_fixed(y_true, y_pred):
         y_true = tf.cast(y_true, tf.float32)
         
-        # --- PERBAIKAN UNTUK AttributeError ---
-        # Mengganti 'K.clip' yang usang dengan 'tf.clip_by_value' modern
+        # Mengganti 'K.clip'
         y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1. - K.epsilon())
         
-        pt = K.sum(y_true * y_pred, axis=-1)
-        modulating_factor = K.pow(1. - pt, gamma)
-        ce = K.categorical_crossentropy(y_true, y_pred)
+        # --- PERBAIKAN UNTUK AttributeError ---
+        # Mengganti 'K.sum' yang usang dengan 'tf.reduce_sum'
+        pt = tf.reduce_sum(y_true * y_pred, axis=-1)
+        
+        # Mengganti 'K.pow' yang usang dengan 'tf.pow'
+        modulating_factor = tf.pow(1. - pt, gamma)
+        
+        # Menggunakan tf.keras.losses lebih eksplisit
+        ce = tf.keras.losses.categorical_crossentropy(y_true, y_pred)
         
         alpha_t = y_true[..., 1] * alpha + y_true[..., 0] * (1. - alpha)
         loss = alpha_t * modulating_factor * ce
         
-        return K.mean(loss)
+        # Mengganti 'K.mean' yang usang dengan 'tf.reduce_mean'
+        return tf.reduce_mean(loss)
     return focal_loss_fixed
 
 
-# === 2. KERANGKA LAYER DOLPH-CHEBYSHEV (DENGAN PERBAIKAN) ===
+# === 2. KERANGKA LAYER DOLPH-CHEBYSHEV (DENGAN PERBAIKAN LENGKAP) ===
 class DolphChebyshevModulatedConv(Layer):
     """
     Ini adalah Kerangka (Boilerplate) Keras Layer untuk Dolph-Chebyshev.
