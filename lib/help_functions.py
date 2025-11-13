@@ -2,11 +2,16 @@ import h5py
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
+import tensorflow as tf
+from keras import backend as K
+from keras.layers import Layer
+# Anda mungkin perlu impor ini untuk membuat kernel Chebyshev:
+# from scipy import signal 
 
 # ===================================================================
-# === KODE ASLI ANDA (DARI help_function_v1.txt) ===
+# === BAGIAN 1: FUNGSI UTILITAS ASLI ===
 # ===================================================================
-# [cite: 935]
+
 def load_hdf5(infile):
   with h5py.File(infile,"r") as f:  #"with" close the file after its nested commands
     return f["image"][()]
@@ -36,7 +41,7 @@ def group_images(data,per_row):
         all_stripe.append(stripe)
     totimg = all_stripe[0]
     for i in range(1,len(all_stripe)):
-        totimg = np.concatenate((totimg,all_stripe[i]),axis=0)
+         totimg = np.concatenate((totimg,all_stripe[i]),axis=0)
     return totimg
 
 
@@ -50,21 +55,30 @@ def visualize(data,filename):
         img = Image.fromarray(data.astype(np.uint8))   #the image is already 0-255
     else:
         img = Image.fromarray((data*255).astype(np.uint8))  #the image is between 0-1
-    img.save(filename + '.png')
+     img.save(filename + '.png')
     return img
 
 
 #prepare the mask in the right shape for the Unet
 def masks_Unet(masks):
-    # ... (kode sebelumnya) ...
+    assert (len(masks.shape)==4)  #4D arrays
+    assert (masks.shape[1]==1 )  #check the channel is 1
+    
+    # --- PERBAIKAN UNTUK NameError ---
+    # [cite_start]Dua baris ini hilang di kode Anda sebelumnya [cite: 951]
+    im_h = masks.shape[2]
+    im_w = masks.shape[3]
+    # -------------------------------
+    
+    masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
+    new_masks = np.empty((masks.shape[0],im_h*im_w,2))
     for i in range(masks.shape[0]):
         for j in range(im_h*im_w):
+            # Ini juga memperbaiki error indentasi (garis merah)
             if  masks[i,j] == 0:
-                # Luruskan indentasi ini
                 new_masks[i,j,0]=1
                 new_masks[i,j,1]=0
             else:
-                # Luruskan indentasi ini juga
                 new_masks[i,j,0]=0
                 new_masks[i,j,1]=1
     return new_masks
@@ -81,25 +95,19 @@ def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
     elif mode=="threshold":
         for i in range(pred.shape[0]):
             for pix in range(pred.shape[1]):
-                if pred[i,pix,1]>=0.5:
+                 if pred[i,pix,1]>=0.5:
                      pred_images[i,pix]=1
                 else:
                     pred_images[i,pix]=0
     else:
         print ("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
         exit()
-    pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
+     pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
     return pred_images
 
 # ===================================================================
-# === KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
+# === BAGIAN 2: KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
 # ===================================================================
-
-import tensorflow as tf
-from keras import backend as K
-from keras.layers import Layer
-# Anda mungkin perlu impor ini untuk membuat kernel Chebyshev:
-# from scipy import signal 
 
 # === 1. FUNGSI FOCAL LOSS ===
 # (Sesuai saran dari paper Gabor untuk data tidak seimbang)
@@ -115,14 +123,14 @@ def focal_loss(gamma=2., alpha=.25):
         # 2. Clip y_pred untuk menghindari nilai log(0) (error numerik)
         y_pred = K.clip(y_pred, K.epsilon(), 1. - K.epsilon())
         
-        # 3. Hitung pt (probabilitas prediksi untuk kelas yang BENAR)
+         # 3. Hitung pt (probabilitas prediksi untuk kelas yang BENAR)
         # Karena y_true sudah one-hot, perkalian dan penjumlahan ini
         # akan memilih probabilitas yang benar (misal: 0.9 dari [0.1, 0.9])
         pt = K.sum(y_true * y_pred, axis=-1)
         
         # 4. Hitung modulating factor (faktor modulasi)
         modulating_factor = K.pow(1. - pt, gamma)
-        
+          
         # 5. Hitung cross-entropy standar
         # K.categorical_crossentropy menghitung: -sum(y_true * log(y_pred))
         ce = K.categorical_crossentropy(y_true, y_pred)
@@ -158,7 +166,7 @@ class DolphChebyshevModulatedConv(Layer):
     """
     def __init__(self, filters, kernel_size=(3, 3), **kwargs):
         super(DolphChebyshevModulatedConv, self).__init__(**kwargs)
-        self.filters = filters
+         self.filters = filters
         self.kernel_size = kernel_size
         # Anda bisa menambahkan argumen lain di sini, misalnya:
         # self.sidelobe_attenuation = sidelobe_attenuation
@@ -177,7 +185,6 @@ class DolphChebyshevModulatedConv(Layer):
         # Ini adalah inti dari penelitian skripsi Anda.
         # Anda mungkin perlu menggunakan 'scipy.signal.chebwin'
         # atau implementasi 2D kustom.
-        
         # INI HANYA CONTOH/PLACEHOLDER (GANTI INI!)
         # Shape kernel akhir harus: (h, w, input_channels, output_filters)
         print("="*50)
@@ -197,7 +204,7 @@ class DolphChebyshevModulatedConv(Layer):
         # --- AKHIR TUGAS PENELITIAN ANDA ---
         # --------------------------------------------------
 
-        # Ubah kernel NumPy Anda menjadi 'weight' TensorFlow/Keras
+         # Ubah kernel NumPy Anda menjadi 'weight' TensorFlow/Keras
         # Ini adalah kernel filter yang 'fixed' (tidak bisa dilatih).
         self.chebyshev_kernel = self.add_weight(
             name='chebyshev_kernel',
@@ -215,7 +222,7 @@ class DolphChebyshevModulatedConv(Layer):
             inputs,
             self.chebyshev_kernel,
             padding='same' # 'same' agar dimensi H, W tidak berubah
-        )
+         )
 
     def compute_output_shape(self, input_shape):
         # Menghitung shape output
