@@ -1,248 +1,200 @@
-###################################################
-#
-#   Script to
-#   - Calculate prediction of the test dataset
-#   - Calculate the parameters to evaluate the prediction
-#
-##################################################
-
-#Python
-import numpy as np
-import configparser
-from matplotlib import pyplot as plt
 import h5py
-
-#Keras
-from keras.models import model_from_json
-from keras.models import Model
-#scikit learn
-from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_recall_curve
-from sklearn.metrics import jaccard_score
-from sklearn.metrics import f1_score
-import sys
-sys.path.insert(0, './lib/')
-# help_functions.py
-from help_functions import *
-# extract_patches.py
-# extract_patches.py
-from extract_patches import recompone_overlap, pred_only_FOV, get_data_testing_overlap, kill_border
-# pre_processing.py
-from pre_processing import my_PreProc
-
+import numpy as np
+from PIL import Image
+from matplotlib import pyplot as plt
+import tensorflow as tf
+from keras import backend as K
+from keras.layers import Layer
 # --- MODIFIKASI SKRIPSI ---
-# Impor 'bahan' baru agar Keras mengenalinya saat memuat model
-from help_functions import DolphChebyshevModulatedConv, focal_loss
+# Impor 'scipy.signal' untuk membuat window Chebyshev
+import scipy.signal
+
+# ===================================================================
+# === BAGIAN 1: FUNGSI UTILITAS ASLI (TELAH DIPERBAIKI) ===
+# ===================================================================
+
+def load_hdf5(infile):
+  with h5py.File(infile,"r") as f:  #"with" close the file after its nested commands
+    return f["image"][()]
+
+def write_hdf5(arr,outfile):
+  with h5py.File(outfile,"w") as f:
+    f.create_dataset("image", data=arr, dtype=arr.dtype)
+
+#convert RGB image in black and white
+def rgb2gray(rgb):
+    assert (len(rgb.shape)==4)  #4D arrays
+    assert (rgb.shape[1]==3)
+    bn_imgs = rgb[:,0,:,:]*0.299 + rgb[:,1,:,:]*0.587 + rgb[:,2,:,:]*0.114
+    bn_imgs = np.reshape(bn_imgs,(rgb.shape[0],1,rgb.shape[2],rgb.shape[3]))
+    return bn_imgs
+
+#group a set of images row per columns
+def group_images(data,per_row):
+    assert data.shape[0]%per_row==0
+    assert (data.shape[1]==1 or data.shape[1]==3)
+    data = np.transpose(data,(0,2,3,1))  #corect format for imshow
+    all_stripe = []
+    for i in range(int(data.shape[0]/per_row)):
+        stripe = data[i*per_row]
+        for k in range(i*per_row+1, i*per_row+per_row):
+            stripe = np.concatenate((stripe,data[k]),axis=1)
+        all_stripe.append(stripe)
+    totimg = all_stripe[0]
+    for i in range(1,len(all_stripe)):
+         totimg = np.concatenate((totimg,all_stripe[i]),axis=0)
+    return totimg
 
 
-#========= CONFIG FILE TO READ FROM =======
-config = configparser.RawConfigParser()
-config.read('configuration.txt')
-#===========================================
-path_data = config.get('data paths', 'path_local')
-
-#original test images (for FOV selection)
-DRIVE_test_imgs_original = path_data + config.get('data paths', 'test_imgs_original')
-test_imgs_orig = load_hdf5(DRIVE_test_imgs_original)
-full_img_height = test_imgs_orig.shape[2]
-full_img_width = test_imgs_orig.shape[3]
-#the border masks provided by the DRIVE
-DRIVE_test_border_masks = path_data + config.get('data paths', 'test_border_masks')
-test_border_masks = load_hdf5(DRIVE_test_border_masks)
-# ground truth
-gtruth_path = path_data + config.get('data paths', 'test_groundTruth')
-gtruth_masks_all = load_hdf5(gtruth_path)
-
-# dimension of the patches
-patch_height = int(config.get('data attributes', 'patch_height'))
-patch_width = int(config.get('data attributes', 'patch_width'))
-#the stride in case output with average
-stride_height = int(config.get('testing settings', 'stride_height'))
-stride_width = int(config.get('testing settings', 'stride_width'))
-#model name
-name_experiment = config.get('experiment name', 'name')
-path_experiment = './' +name_experiment +'/'
-#N full images to be predicted
-Imgs_to_test = int(config.get('testing settings', 'full_images_to_test'))
-#Grouping of the predicted images
-N_visual = int(config.get('testing settings', 'N_group_visual'))
-
-#================ Load model ==================================
-best_last = config.get('testing settings', 'best_last')
-
-# --- MODIFIKASI SKRIPSI ---
-# Beri tahu Keras tentang layer kustom Anda saat memuat arsitektur
-# Ini SANGAT PENTING, tanpanya Keras akan error
-custom_objects = {
-    'DolphChebyshevModulatedConv': DolphChebyshevModulatedConv,
-    'focal_loss_fixed': focal_loss(gamma=2., alpha=.25) # Gunakan nama inner function dari loss Anda
-}
-model = model_from_json(
-    open(path_experiment+name_experiment +'_architecture.json').read(),
-    custom_objects=custom_objects
-)
-# --- SELESAI MODIFIKASI ---
-
-try:
-    model.load_weights(path_experiment+name_experiment + '_'+best_last+'.weights.h5')
-except IOError:
-    model.load_weights(path_experiment+name_experiment + '_'+best_last+'_weights.h5')
-
-#======= PREDICTION LOOP =========
-all_predictions = []
-all_masks = []
-for i in range(Imgs_to_test):
-    print("Predicting image " + str(i+1) + "/" + str(Imgs_to_test))
-    
-    test_img_original_single = test_imgs_orig[i:i+1, ...]
-    gtruth_single = gtruth_masks_all[i:i+1, ...]
-    
-    with h5py.File('temp_img.hdf5', 'w') as hf:
-        hf.create_dataset('image', data=test_img_original_single)
-    with h5py.File('temp_mask.hdf5', 'w') as hf:
-        hf.create_dataset('image', data=gtruth_single)
-
-    patches_imgs_test, new_height, new_width, masks_test = get_data_testing_overlap(
-        DRIVE_test_imgs_original='temp_img.hdf5',
-        DRIVE_test_groudTruth='temp_mask.hdf5',
-        Imgs_to_test=1,
-        patch_height=patch_height,
-        patch_width=patch_width,
-        stride_height=stride_height,
-        stride_width=stride_width
-    )
-    
-    patches_imgs_test = np.transpose(patches_imgs_test, (0, 2, 3, 1))
-    
-    prediction = model.predict(patches_imgs_test, batch_size=32, verbose=0)
-    
-    pred_patches = pred_to_imgs(prediction, patch_height, patch_width, "original")
-    
-    # ======================== PERBAIKAN DI SINI ========================
-    # Ubah format patch dari channels_first ke channels_last agar sesuai dengan recompone_overlap yang termodifikasi
-    pred_patches = np.transpose(pred_patches, (0, 2, 3, 1))
-    # ===================================================================
-
-    pred_img = recompone_overlap(pred_patches, new_height, new_width, stride_height, stride_width)
-    
-    all_predictions.append(pred_img)
-    all_masks.append(masks_test)
-
-pred_imgs = np.concatenate(all_predictions, axis=0)
-gtruth_masks = np.concatenate(all_masks, axis=0)
-
-#========== Proses selanjutnya ... ====================
-# Kembalikan ke format channels_first untuk fungsi-fungsi evaluasi asli
-pred_imgs = np.transpose(pred_imgs, (0, 3, 1, 2))
-orig_imgs = my_PreProc(test_imgs_orig[0:pred_imgs.shape[0],:,:,:])
-kill_border(pred_imgs, test_border_masks)
-orig_imgs = orig_imgs[:,:,0:full_img_height,0:full_img_width]
-pred_imgs = pred_imgs[:,:,0:full_img_height,0:full_img_width]
-gtruth_masks = gtruth_masks[:,:,0:full_img_height,0:full_img_width]
-
-# ... sisa kode evaluasi dan penyimpanan sama persis, tidak perlu diubah ...
-print("Orig imgs shape: " + str(orig_imgs.shape))
-print("pred imgs shape: " + str(pred_imgs.shape))
-print("Gtruth imgs shape: " + str(gtruth_masks.shape))
-# ... (sisa kode sama persis)
-visualize(group_images(orig_imgs, N_visual), path_experiment + "all_originals")
-visualize(group_images(pred_imgs, N_visual), path_experiment + "all_predictions")
-visualize(group_images(gtruth_masks, N_visual), path_experiment + "all_groundTruths")
-
-assert (orig_imgs.shape[0] == pred_imgs.shape[0] and orig_imgs.shape[0] == gtruth_masks.shape[0])
-N_predicted = orig_imgs.shape[0]
-group = N_visual
-assert (N_predicted % group == 0)
-for i in range(int(N_predicted / group)):
-    orig_stripe = group_images(orig_imgs[i * group:(i * group) + group, :, :, :], group)
-    masks_stripe = group_images(gtruth_masks[i * group:(i * group) + group, :, :, :], group)
-    pred_stripe = group_images(pred_imgs[i * group:(i * group) + group, :, :, :], group)
-    total_img = np.concatenate((orig_stripe, masks_stripe, pred_stripe), axis=0)
-    visualize(total_img, path_experiment + name_experiment + "_Original_GroundTruth_Prediction" + str(i))
-
-
-# ====== Evaluate the results
-print("\n\n========  Evaluate the results =======================")
-y_scores, y_true = pred_only_FOV(pred_imgs, gtruth_masks, test_border_masks)
-print("Calculating results only inside the FOV:")
-print("y scores pixels: " + str(y_scores.shape[0]))
-print("y true pixels: " + str(y_true.shape[0]))
-
-#Area under the ROC curve
-fpr, tpr, thresholds = roc_curve((y_true), y_scores)
-AUC_ROC = roc_auc_score(y_true, y_scores)
-print ("\nArea under the ROC curve: " +str(AUC_ROC))
-roc_curve =plt.figure()
-plt.plot(fpr,tpr,'-',label='Area Under the Curve (AUC = %0.4f)' % AUC_ROC)
-plt.title('ROC curve')
-plt.xlabel("FPR (False Positive Rate)")
-plt.ylabel("TPR (True Positive Rate)")
-plt.legend(loc="lower right")
-plt.savefig(path_experiment+"ROC.png")
-
-#Precision-recall curve
-precision, recall, thresholds = precision_recall_curve(y_true, y_scores)
-precision = np.fliplr([precision])[0]
-recall = np.fliplr([recall])[0]
-AUC_prec_rec = np.trapz(precision,recall)
-print ("\nArea under Precision-Recall curve: " +str(AUC_prec_rec))
-prec_rec_curve = plt.figure()
-plt.plot(recall,precision,'-',label='Area Under the Curve (AUC = %0.4f)' % AUC_prec_rec)
-plt.title('Precision - Recall curve')
-plt.xlabel("Recall")
-plt.ylabel("Precision")
-plt.legend(loc="lower right")
-plt.savefig(path_experiment+"Precision_recall.png")
-
-#Confusion matrix
-threshold_confusion = 0.5
-print ("\nConfusion matrix:  Custom threshold (for positive) of " +str(threshold_confusion))
-y_pred = np.empty((y_scores.shape[0]))
-for i in range(y_scores.shape[0]):
-    if y_scores[i]>=threshold_confusion:
-        y_pred[i]=1
+#visualize image (as PIL image, NOT as matplotlib!)
+def visualize(data,filename):
+    assert (len(data.shape)==3) #height*width*channels
+    img = None
+    if data.shape[2]==1:  #in case it is black and white
+        data = np.reshape(data,(data.shape[0],data.shape[1]))
+    if np.max(data)>1:
+        img = Image.fromarray(data.astype(np.uint8))   #the image is already 0-255
     else:
-        y_pred[i]=0
-confusion = confusion_matrix(y_true, y_pred)
-print (confusion)
-accuracy = 0
-if float(np.sum(confusion))!=0:
-    accuracy = float(confusion[0,0]+confusion[1,1])/float(np.sum(confusion))
-print ("Global Accuracy: " +str(accuracy))
-specificity = 0
-if float(confusion[0,0]+confusion[0,1])!=0:
-    specificity = float(confusion[0,0])/float(confusion[0,0]+confusion[0,1])
-print ("Specificity: " +str(specificity))
-sensitivity = 0
-if float(confusion[1,1]+confusion[1,0])!=0:
-    sensitivity = float(confusion[1,1])/float(confusion[1,1]+confusion[1,0])
-print ("Sensitivity: " +str(sensitivity))
-precision = 0
-if float(confusion[1,1]+confusion[0,1])!=0:
-    precision = float(confusion[1,1])/float(confusion[1,1]+confusion[0,1])
-print ("Precision: " +str(precision))
+        img = Image.fromarray((data*255).astype(np.uint8))  #the image is between 0-1
+    img.save(filename + '.png')
+    return img
 
-#Jaccard similarity index
-jaccard_index = jaccard_score(y_true, y_pred)
-print ("\nJaccard similarity score: " +str(jaccard_index))
 
-#F1 score
-F1_score = f1_score(y_true, y_pred, labels=None, average='binary', sample_weight=None)
-print ("\nF1 score (F-measure): " +str(F1_score))
+#prepare the mask in the right shape for the Unet
+def masks_Unet(masks):
+    assert (len(masks.shape)==4)  #4D arrays
+    assert (masks.shape[1]==1 )  #check the channel is 1
+    
+    im_h = masks.shape[2]
+    im_w = masks.shape[3]
+    
+    masks = np.reshape(masks,(masks.shape[0],im_h*im_w))
+    new_masks = np.empty((masks.shape[0],im_h*im_w,2))
+    for i in range(masks.shape[0]):
+        for j in range(im_h*im_w):
+            if  masks[i,j] == 0:
+                new_masks[i,j,0]=1
+                new_masks[i,j,1]=0
+            else:
+                new_masks[i,j,0]=0
+                new_masks[i,j,1]=1
+    return new_masks
 
-#Save the results
-file_perf = open(path_experiment+'performances.txt', 'w')
-file_perf.write("Area under the ROC curve: "+str(AUC_ROC)
-                  + "\nArea under Precision-Recall curve: " +str(AUC_prec_rec)
-                  + "\nJaccard similarity score: " +str(jaccard_index)
-                  + "\nF1 score (F-measure): " +str(F1_score)
-                  +"\n\nConfusion matrix:"
-                  +str(confusion)
-                  +"\nACCURACY: " +str(accuracy)
-                  +"\nSENSITIVITY: " +str(sensitivity)
-                  +"\nSPECIFICITY: " +str(specificity)
-                  +"\nPRECISION: " +str(precision)
-                  )
-file_perf.close()
+
+def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
+    assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,2)
+    assert (pred.shape[2]==2 )  #check the classes are 2
+    pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
+    if mode=="original":
+        for i in range(pred.shape[0]):
+            for pix in range(pred.shape[1]):
+                pred_images[i,pix]=pred[i,pix,1]
+    elif mode=="threshold":
+        for i in range(pred.shape[0]):
+            for pix in range(pred.shape[1]):
+                 if pred[i,pix,1]>=0.5:
+                     pred_images[i,pix]=1
+                 else:
+                    pred_images[i,pix]=0
+    else:
+        print ("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
+        exit()
+    pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
+    return pred_images
+
+# ===================================================================
+# === BAGIAN 2: KODE BARU TAMBAHAN UNTUK SKRIPSI ANDA ===
+# ===================================================================
+
+# === 1. FUNGSI FOCAL LOSS (FINAL) ===
+def focal_loss(gamma=2., alpha=.25):
+    """
+    Implementasi Keras untuk Focal Loss.
+    """
+    def focal_loss_fixed(y_true, y_pred):
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.clip_by_value(y_pred, K.epsilon(), 1. - K.epsilon())
+        
+        pt = tf.reduce_sum(y_true * y_pred, axis=-1)
+        modulating_factor = tf.pow(1. - pt, gamma)
+        ce = tf.keras.losses.categorical_crossentropy(y_true, y_pred)
+        
+        alpha_t = y_true[..., 1] * alpha + y_true[..., 0] * (1. - alpha)
+        loss = alpha_t * modulating_factor * ce
+        
+        return tf.reduce_mean(loss)
+    return focal_loss_fixed
+
+
+# === 2. LAYER DOLPH-CHEBYSHEV (IMPLEMENTASI DENGAN PERBAIKAN) ===
+class DolphChebyshevModulatedConv(Layer):
+    """
+    Ini adalah implementasi logis dari layer Dolph-Chebyshev
+    untuk skripsi Anda.
+    """
+    def __init__(self, filters, kernel_size=(3, 3), sidelobe_attenuation=80, **kwargs):
+        super().__init__(**kwargs)
+        self.filters = filters
+        self.kernel_size = kernel_size
+        self.sidelobe_attenuation = sidelobe_attenuation # 'at' untuk chebwin
+
+    def build(self, input_shape):
+        input_channels = input_shape[-1]
+        if input_channels is None:
+            raise ValueError("Dimensi channel input harus diketahui.")
+
+        # --- PERBAIKAN FUNGSI ---
+        # Mengganti `scipy.signal.chebwin` dengan `scipy.signal.get_window`
+        
+        # 1. Buat window Chebyshev 1D untuk tinggi dan lebar
+        window_tuple_h = ('chebwin', self.sidelobe_attenuation)
+        cheb_win_h = scipy.signal.get_window(window_tuple_h, self.kernel_size[0])
+        
+        window_tuple_w = ('chebwin', self.sidelobe_attenuation)
+        cheb_win_w = scipy.signal.get_window(window_tuple_w, self.kernel_size[1])
+        # --- SELESAI PERBAIKAN ---
+        
+        # 2. Buat kernel 2D dari window 1D (menggunakan outer product)
+        kernel_2d = np.outer(cheb_win_h, cheb_win_w)
+        
+        # 3. Normalisasi kernel (opsional, tapi praktik yang baik)
+        kernel_2d /= np.sum(kernel_2d)
+        
+        # 4. Bentuk ulang agar bisa di-broadcast (dikalikan)
+        # --- PERBAIKAN TypeError (List vs Tuple) ---
+        # Ubah self.kernel_size menjadi tuple() sebelum ditambah
+        cheb_filter_shape = tuple(self.kernel_size) + (1, 1)
+        self.chebyshev_filter = tf.constant(
+            np.reshape(kernel_2d, cheb_filter_shape), 
+            dtype=tf.float32
+        )
+        
+        # --- KERNEL YANG BISA DILATIH ---
+        # 5. Buat kernel 'learnable' (yang akan dimodulasi)
+        # --- PERBAIKAN TypeError (List vs Tuple) ---
+        # Ubah self.kernel_size menjadi tuple() sebelum ditambah
+        kernel_shape = tuple(self.kernel_size) + (input_channels, self.filters)
+        
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=kernel_shape,
+            initializer='glorot_uniform', 
+            trainable=True  # INI YANG PALING PENTING
+        )
+        
+        super(DolphChebyshevModulatedConv, self).build(input_shape) 
+
+    def call(self, inputs):
+        # 6. Modulasi: kalikan kernel 'learnable' dengan filter 'fixed'
+        modulated_kernel = self.kernel * self.chebyshev_filter
+
+        # 7. Lakukan konvolusi dengan kernel yang sudah dimodulasi
+        return tf.nn.conv2d(
+            inputs,
+            modulated_kernel,
+            strides=[1, 1, 1, 1],
+            padding='SAME'
+        )
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], input_shape[1], input_shape[2], self.filters)
