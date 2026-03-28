@@ -126,11 +126,16 @@ def focal_loss(gamma=2., alpha=.25):
     return focal_loss_fixed
 
 
-# === 2. LAYER DOLPH-CHEBYSHEV (IMPLEMENTASI DENGAN PERBAIKAN) ===
+# === 2. LAYER DOLPH-CHEBYSHEV (IMPLEMENTASI LOGIKA FINAL) ===
 class DolphChebyshevModulatedConv(Layer):
     """
     Ini adalah implementasi logis dari layer Dolph-Chebyshev
     untuk skripsi Anda.
+    
+    Ini meniru metodologi Gabor dengan:
+    1. Membuat filter Dolph-Chebyshev 2D yang 'fixed' (tidak dilatih).
+    2. Membuat 'kernel' konvolusi yang 'learnable' (bisa dilatih).
+    3. Mengalikan keduanya (modulasi) untuk membuat kernel final.
     """
     def __init__(self, filters, kernel_size=(3, 3), sidelobe_attenuation=80, **kwargs):
         super().__init__(**kwargs)
@@ -143,16 +148,11 @@ class DolphChebyshevModulatedConv(Layer):
         if input_channels is None:
             raise ValueError("Dimensi channel input harus diketahui.")
 
-        # --- PERBAIKAN FUNGSI ---
-        # Mengganti `scipy.signal.chebwin` dengan `scipy.signal.get_window`
-        
+        # --- INI ADALAH LOGIKA FILTER SKRIPSI ANDA ---
         # 1. Buat window Chebyshev 1D untuk tinggi dan lebar
-        window_tuple_h = ('chebwin', self.sidelobe_attenuation)
-        cheb_win_h = scipy.signal.get_window(window_tuple_h, self.kernel_size[0])
-        
-        window_tuple_w = ('chebwin', self.sidelobe_attenuation)
-        cheb_win_w = scipy.signal.get_window(window_tuple_w, self.kernel_size[1])
-        # --- SELESAI PERBAIKAN ---
+        # 'at' (attenuation) adalah parameter kunci untuk penelitian Anda
+        cheb_win_h = scipy.signal.chebwin(self.kernel_size[0], at=self.sidelobe_attenuation)
+        cheb_win_w = scipy.signal.chebwin(self.kernel_size[1], at=self.sidelobe_attenuation)
         
         # 2. Buat kernel 2D dari window 1D (menggunakan outer product)
         kernel_2d = np.outer(cheb_win_h, cheb_win_w)
@@ -161,6 +161,7 @@ class DolphChebyshevModulatedConv(Layer):
         kernel_2d /= np.sum(kernel_2d)
         
         # 4. Bentuk ulang agar bisa di-broadcast (dikalikan)
+        # Shape menjadi: (h, w, 1, 1)
         cheb_filter_shape = self.kernel_size + (1, 1)
         self.chebyshev_filter = tf.constant(
             np.reshape(kernel_2d, cheb_filter_shape), 
@@ -169,19 +170,22 @@ class DolphChebyshevModulatedConv(Layer):
         
         # --- KERNEL YANG BISA DILATIH ---
         # 5. Buat kernel 'learnable' (yang akan dimodulasi)
+        # Shape: (h, w, input_channels, output_filters)
         kernel_shape = self.kernel_size + (input_channels, self.filters)
         
         self.kernel = self.add_weight(
             name='kernel',
             shape=kernel_shape,
-            initializer='glorot_uniform', 
+            initializer='glorot_uniform', # Inisialisasi standar Keras
             trainable=True  # INI YANG PALING PENTING
         )
+        # --- SELESAI ---
         
         super(DolphChebyshevModulatedConv, self).build(input_shape) 
 
     def call(self, inputs):
         # 6. Modulasi: kalikan kernel 'learnable' dengan filter 'fixed'
+        # [h,w,C_in,C_out] * [h,w,1,1] -> [h,w,C_in,C_out]
         modulated_kernel = self.kernel * self.chebyshev_filter
 
         # 7. Lakukan konvolusi dengan kernel yang sudah dimodulasi
